@@ -1,0 +1,77 @@
+@import url('https://fontlibrary.org/face/segment7');
+@import url('https://fonts.googleapis.com/css?family=Inconsolata');
+
+.body-container {
+  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 40px;
+  -webkit-font-smoothing: antialiased;
+  font-size: 1.125em;
+  color: #333;
+  line-height: 1.5em;
+}
+
+.scoreboard {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+
+.scorecard {
+  text-align: center;
+  font-family: 'Segment7Standard', sans-serif;
+  margin-left: 20px;
+  margin-right: 20px;
+  font-size: 4em;
+}
+
+.gameclock {
+  font-family: 'Segment7Standard', sans-serif;
+  color: #777;
+  font-size: 2em;
+}
+
+.status {
+  font-family: 'Inconsolata', monospace;
+  color: #777;
+  font-size: 1.5em;
+}
+
+.button {
+  font-family: 'Inconsolata', monospace;
+  background-color: #777;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.button:hover {
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.blink {
+  animation: blink-animation 1s steps(5, start) infinite;
+  -webkit-animation: blink-animation 1s steps(5, start) infinite;
+}
+
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
