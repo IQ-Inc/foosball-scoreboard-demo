@@ -14,10 +14,10 @@
 
 (defonce byte-to-event
   (hash-map
-    (byte \0) :drop       ; black drop - not specified
-    (byte \1) :drop       ; yellow drop - not specified
-    (byte \2) :black      ; black goal
-    (byte \3) :yellow))   ; yellow goal
+    (byte \D) :drop       ; black drop - not specified
+    (byte \C) :drop       ; yellow drop - not specified
+    (byte \B) :black      ; black goal
+    (byte \A) :yellow))   ; yellow goal
 
 (defn get-event!
   "Get the most recent event. Blocks for the serial driver."

@@ -3,24 +3,24 @@
   {:author "Ian McIntyre"}
 
   (:require-macros
-    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
-  (:require 
-    [reagent.core :as reagent :refer [atom]]
-    [secretary.core :as secretary :include-macros true]
-    [accountant.core :as accountant]
-    [cljs.core.async :as async :refer (<! >! put! chan)]
-    [taoensso.sente  :as sente :refer (cb-success?)]
-    [foosball-score.game :as game]
-    [foosball-score.clock :as clock]
-    [foosball-score.status :as status]
-    [foosball-score.events :as events]
-    [foosball-score.util :refer [ws-url]]))
+   [cljs.core.async.macros :as asyncm :refer (go go-loop)])
+  (:require
+   [reagent.core :as reagent :refer [atom]]
+   [secretary.core :as secretary :include-macros true]
+   [accountant.core :as accountant]
+   [cljs.core.async :as async :refer (<! >! put! chan)]
+   [taoensso.sente  :as sente :refer (cb-success?)]
+   [foosball-score.game :as game]
+   [foosball-score.clock :as clock]
+   [foosball-score.status :as status]
+   [foosball-score.events :as events]
+   [foosball-score.util :refer [ws-url]]))
 
 ;; -------------------------
 ;; Websocket setup
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! ws-url ; Path must match the server's path
-       {:type :auto})] ; e/o #{:auto :ajax :ws}
+                                  {:type :auto})] ; e/o #{:auto :ajax :ws}
   (def chsk       chsk)
   (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
   (def chsk-send! send-fn) ; ChannelSocket's send API fn
@@ -34,13 +34,13 @@
   []
   (do
     (game/new-game)
-    (clock/new-game) 
+    (clock/new-game)
     (status/change-status :waiting)))
 
 ;; -------------------------
 ;; Foosball event handlers
 (defn- score-handler
-  "General score handler for a team" 
+  "General score handler for a team"
   [team _]
   (when (= (status/status?) :playing)
     (clock/pause-game)
@@ -68,11 +68,11 @@
 
 (defn home-page []
   [:div
-    [game/scoreboard :black :yellow]
-    [clock/game-clock]
-    [status/status-msg]
-    [:div.scoreboard
-      [:input.button {:type "button" :value "NEW GAME" :on-click new-game}]]])
+   [game/scoreboard :black :yellow]
+   [clock/game-clock]
+   [status/status-msg]
+   [:div.scoreboard
+    [:input.button {:type "button" :value "NEW GAME" :on-click new-game}]]])
 
 ;; -------------------------
 ;; Routes
@@ -91,15 +91,15 @@
 (defn mount-root []
   (do
     (reagent/render [current-page] (.getElementById js/document "app")))
-    (sente/start-client-chsk-router! ch-chsk events/foosball-event))
+  (sente/start-client-chsk-router! ch-chsk events/foosball-event))
 
 (defn init! []
   (accountant/configure-navigation!
-    {:nav-handler
-     (fn [path]
-       (secretary/dispatch! path))
-     :path-exists?
-     (fn [path]
-       (secretary/locate-route path))})
+   {:nav-handler
+    (fn [path]
+      (secretary/dispatch! path))
+    :path-exists?
+    (fn [path]
+      (secretary/locate-route path))})
   (accountant/dispatch-current!)
   (mount-root))

@@ -28,12 +28,12 @@ and updates will be pushed to all connected clients.
 The server expects the following serial events to correspond to specific
 foosball events:
 
-| ASCII `char` (`code`) |    Foosball Event    |
+| ASCII `char`          |    Foosball Event    |
 | --------------------- | -------------------- |
-|  `'0'` (`48`)         | Black ball drop      |
-|  `'1'` (`49`)         | Yellow ball drop     |
-|  `'2'` (`50`)         | Black scores a goal  |
-|  `'3'` (`51`)         | Yellow scores a goal |
+|  `'D'`                | Black ball drop      |
+|  `'C'`                | Yellow ball drop     |
+|  `'B'`                | Black scores a goal  |
+|  `'A'`                | Yellow scores a goal |
 
 The codes are configurable in the `foosball-score.serial` namespace.
 
