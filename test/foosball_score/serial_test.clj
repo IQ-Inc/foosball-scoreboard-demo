@@ -2,7 +2,6 @@
   (:require
     [clojure.test :refer :all]
     [foosball-score.serial :refer [serial-message-accumulate]]
-    [foosball-score.util :refer [serial-msg-sentinal]]
     [clojure.java.io :as io]))
 
 (defn- str->input-stream

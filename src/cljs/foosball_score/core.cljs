@@ -43,7 +43,6 @@
   "General score handler for a team"
   [team _]
   (when (= (status/status?) :playing)
-    (clock/pause-game)
     (game/point-for team)
     (if (game/game-over?)
       (status/change-status :game-over)

@@ -5,8 +5,7 @@
   (:require
     [clojure.core.async :as async  :refer [>! go]]
     [clojure.string :refer [trim]]
-    [serial.core :as serial]
-    [foosball-score.util :refer [serial-msg-sentinal]]))
+    [serial.core :as serial]))
 
 (def ^:private subscribers
   (atom '()))

@@ -1,4 +1,4 @@
-(defproject foosball-score "0.0.1-SNAPSHOT"
+(defproject foosball-score "0.1.0-SNAPSHOT"
   :description "Demo foosball scoreboard"
   :url "https://github.com/IQ-Inc/foosball-scoreboard-demo"
   :license {:name "Eclipse Public License"

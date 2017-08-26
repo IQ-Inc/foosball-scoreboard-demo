@@ -7,7 +7,7 @@
     [config.core :refer [env]]
     [clojure.core.async :as async :refer [<! chan go-loop]]
     [org.httpkit.server :refer [run-server]])
-  (:gen-class))
+  (:gen-class :main true))
 
 (def event-lookup
   { "BD" :drop        ; black drop - not specified as a unique event
