@@ -8,3 +8,5 @@
   `(fn [~(gensym)] ~x))
 
 (defonce ws-url "/chsk")
+
+(defonce serial-msg-sentinal \newline)

@@ -4,7 +4,8 @@
   
   (:require
     [clojure.core.async :as async  :refer [<!! >!! chan go go-loop]]
-    [serial.core :as serial]))
+    [serial.core :as serial]
+    [foosball-score.util :refer [serial-msg-sentinal]]))
 
 (defonce events-chan 
   (atom (chan)))
@@ -12,12 +13,14 @@
 (defonce serial-port
   (atom nil))
 
-(defonce byte-to-event
+(defonce max-serial-msg-size 256)
+
+(defonce event-lookup
   (hash-map
-    (byte \D) :drop       ; black drop - not specified
-    (byte \C) :drop       ; yellow drop - not specified
-    (byte \B) :black      ; black goal
-    (byte \A) :yellow))   ; yellow goal
+    "BD" :drop       ; black drop - not specified as a unique event
+    "YD" :drop       ; yellow drop - not specified as a unique event
+    "BG" :black      ; black goal
+    "YG" :yellow))   ; yellow goal
 
 (defn get-event!
   "Get the most recent event. Blocks for the serial driver."
@@ -25,14 +28,25 @@
   (let [c @events-chan]
     (<!! c)))
 
-(defn byte-to-event-handler
-  "Maps a byte into a foosball event.
-  Blocks until the event is received on the other end.
-  TODO make this handle multi-byte events."
+(defn serial-message-accumulate
+  "Accumulates serial bytes into a string until the newline character,
+  end of file, or excess of max-serial-msg-size iterations."
+  ([input-stream] (serial-message-accumulate input-stream [] 0))
+  ([input-stream acc iter]
+    (let [eol (byte serial-msg-sentinal)
+          b (.read input-stream)]
+      (if (or (= b eol) (> iter (- max-serial-msg-size 1)))
+        (apply str (map char acc))
+        (serial-message-accumulate
+          input-stream (conj acc b) (inc iter))))))
+
+(defn serial-to-event-handler
+  "Maps a serial message into a foosball event.
+  Blocks until the event is received on the other end."
   [input-stream]
   (let [c @events-chan
-        b (.read input-stream)]
-    (if-let [event (get byte-to-event b)]
+        k (serial-message-accumulate input-stream)]
+    (if-let [event (get event-lookup k)]
       (>!! c event))))
     
 
@@ -42,5 +56,5 @@
   ([path] (listen-forever-on-port path 115200))
   ([path baud-rate]
   (let [ser (serial/open path :baud-rate baud-rate)]
-    (serial/listen! ser byte-to-event-handler)
+    (serial/listen! ser serial-to-event-handler false)
     (reset! serial-port ser))))

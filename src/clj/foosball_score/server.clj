@@ -21,8 +21,8 @@
 
 (defn -main [& args]
   (let [port (Integer/parseInt (or (env :port) "3000"))
-        ser (str (nth args 0))]
-    (if-let [baud (nth args 1)]
+        ser (nth args 0)]
+    (if-let [baud (read-string (nth args 1))]
       (serial/listen-forever-on-port ser baud)
       (serial/listen-forever-on-port ser))
     (ser-to-ws)
