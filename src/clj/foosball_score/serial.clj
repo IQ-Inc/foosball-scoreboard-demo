@@ -36,7 +36,7 @@
       (trim (apply str (map char acc)))
       (recur (.read in-stream) (conj acc value)))))
 
-(defn serial-to-event-handler
+(defn- serial-to-event-handler
   "Maps a serial message into a foosball event.
   Blocks until the event is received on the other end."
   [input-stream]
@@ -46,10 +46,10 @@
       (>!! c event))))
     
 
-(defn listen-forever-on-port
+(defn listen-on-port
   "Begin listening on the serial device specified by path.
   Optionally, provide a baud rate."
-  ([path] (listen-forever-on-port path 115200))
+  ([path] (listen-on-port path 115200))
   ([path baud-rate]
   (let [ser (serial/open path :baud-rate baud-rate)]
     (serial/listen! ser serial-to-event-handler false)

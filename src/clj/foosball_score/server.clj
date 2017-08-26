@@ -23,7 +23,7 @@
   (let [port (Integer/parseInt (or (env :port) "3000"))
         ser (nth args 0)]
     (if-let [baud (read-string (nth args 1))]
-      (serial/listen-forever-on-port ser baud)
-      (serial/listen-forever-on-port ser))
+      (serial/listen-on-port ser baud)
+      (serial/listen-on-port ser))
     (ser-to-ws)
     (run-server app {:port port :join? false})))
