@@ -9,7 +9,7 @@
   [msg]
   (io/input-stream
     (byte-array
-      (map byte (conj (vec msg) serial-msg-sentinal)))))
+      (map byte (conj (vec msg) \newline)))))
 
 (deftest serial-message-accumulate-test
 
@@ -20,12 +20,6 @@
   (testing "A serial message of multiple characters"
     (let [input (str->input-stream "Hello world")]
       (is (= "Hello world" (serial-message-accumulate input)))))
-      
-  (testing "A serial message of too many characters"
-    (let [raw-input (apply str (take 1000 (cycle "A")))
-          input (str->input-stream raw-input)
-          expected (apply str (take 256 raw-input))]
-      (is (= expected (serial-message-accumulate input)))))
       
   (testing "An empty serial message"
     (is (= ""

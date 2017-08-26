@@ -4,6 +4,7 @@
   
   (:require
     [clojure.core.async :as async  :refer [<!! >!! chan go go-loop]]
+    [clojure.string :refer [trim]]
     [serial.core :as serial]
     [foosball-score.util :refer [serial-msg-sentinal]]))
 
@@ -13,14 +14,11 @@
 (defonce serial-port
   (atom nil))
 
-(defonce max-serial-msg-size 256)
-
-(defonce event-lookup
-  (hash-map
-    "BD" :drop       ; black drop - not specified as a unique event
-    "YD" :drop       ; yellow drop - not specified as a unique event
-    "BG" :black      ; black goal
-    "YG" :yellow))   ; yellow goal
+(def event-lookup
+  { "BD" :drop        ; black drop - not specified as a unique event
+    "YD" :drop        ; yellow drop - not specified as a unique event
+    "BG" :black       ; black goal
+    "YG" :yellow })   ; yellow goal
 
 (defn get-event!
   "Get the most recent event. Blocks for the serial driver."
@@ -29,24 +27,22 @@
     (<!! c)))
 
 (defn serial-message-accumulate
-  "Accumulates serial bytes into a string until the newline character,
-  end of file, or excess of max-serial-msg-size iterations."
-  ([input-stream] (serial-message-accumulate input-stream [] 0))
-  ([input-stream acc iter]
-    (let [eol (byte serial-msg-sentinal)
-          b (.read input-stream)]
-      (if (or (= b eol) (> iter (- max-serial-msg-size 1)))
-        (apply str (map char acc))
-        (serial-message-accumulate
-          input-stream (conj acc b) (inc iter))))))
+  "Accumulates serial bytes into a string until the newline character. The
+  function accounts for carriage returns by trimming excess whitespace."
+  [in-stream]
+  (loop [value (.read in-stream)
+         acc []]
+    (if (or (= value (byte \newline)) (= -1 value))
+      (trim (apply str (map char acc)))
+      (recur (.read in-stream) (conj acc value)))))
 
 (defn serial-to-event-handler
   "Maps a serial message into a foosball event.
   Blocks until the event is received on the other end."
   [input-stream]
   (let [c @events-chan
-        k (serial-message-accumulate input-stream)]
-    (if-let [event (get event-lookup k)]
+        event-key (serial-message-accumulate input-stream)]
+    (if-let [event (get event-lookup event-key)]
       (>!! c event))))
     
 
