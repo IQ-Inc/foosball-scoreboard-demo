@@ -3,28 +3,29 @@
   {:author "Ian McIntyre"}
   
   (:require
-    [clojure.core.async :as async  :refer [<!! >!! chan go go-loop]]
+    [clojure.core.async :as async  :refer [>! go]]
     [clojure.string :refer [trim]]
     [serial.core :as serial]
     [foosball-score.util :refer [serial-msg-sentinal]]))
 
-(defonce events-chan 
-  (atom (chan)))
+(def ^:private subscribers
+  (atom '()))
 
-(defonce serial-port
+(defonce ^:private serial-port
   (atom nil))
 
-(def event-lookup
-  { "BD" :drop        ; black drop - not specified as a unique event
-    "YD" :drop        ; yellow drop - not specified as a unique event
-    "BG" :black       ; black goal
-    "YG" :yellow })   ; yellow goal
+(defn add-serial-subscriber
+  "Register a subscriber for serial messages. Messages will be pushed onto the
+  provided channel."
+  [chan]
+  (swap! subscribers conj chan))
 
-(defn get-event!
-  "Get the most recent event. Blocks for the serial driver."
-  []
-  (let [c @events-chan]
-    (<!! c)))
+(defn- notify-subscribers
+  "Notify subscribers to the serial event"
+  [event]
+  (let [chans @subscribers]
+    (doseq [chan chans]
+      (go (>! chan event)))))
 
 (defn serial-message-accumulate
   "Accumulates serial bytes into a string until the newline character. The
@@ -36,15 +37,11 @@
       (trim (apply str (map char acc)))
       (recur (.read in-stream) (conj acc value)))))
 
-(defn- serial-to-event-handler
-  "Maps a serial message into a foosball event.
-  Blocks until the event is received on the other end."
+(defn- serial-byte-handler
+  "Handle a serial input stream, and notify subscribers"
   [input-stream]
-  (let [c @events-chan
-        event-key (serial-message-accumulate input-stream)]
-    (if-let [event (get event-lookup event-key)]
-      (>!! c event))))
-    
+  (let [serial-msg (serial-message-accumulate input-stream)]
+    (notify-subscribers serial-msg)))
 
 (defn listen-on-port
   "Begin listening on the serial device specified by path.
@@ -52,5 +49,5 @@
   ([path] (listen-on-port path 115200))
   ([path baud-rate]
   (let [ser (serial/open path :baud-rate baud-rate)]
-    (serial/listen! ser serial-to-event-handler false)
+    (serial/listen! ser serial-byte-handler false)
     (reset! serial-port ser))))

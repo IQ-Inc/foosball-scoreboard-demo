@@ -51,7 +51,7 @@
 
 (def app (wrap-middleware #'routes))
 
-(defn push-event
+(defn push-event!
   "Send an event to all connected clients"
   [event]
   (if-let [uids (:any @connected-uids)]
