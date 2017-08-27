@@ -8,7 +8,7 @@
 .scoreboard {
   font-family: 'DSEG7-Modern', monospace;
   padding: 0;
-  margin: 0;
+  margin-top: 40px;
   list-style: none;
   display: -webkit-box;
   display: -moz-box;
@@ -20,13 +20,19 @@
   justify-content: center;
 }
 
+p, h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
 .scorecard {
   margin-left: 20px;
   margin-right: 20px;
   font-weight: bold;
-  font-size: 6em;
+  font-size: 4em;
   height: 2.1em;
   width: 4em;
+  margin-bottom: 100px;
 }
 
 .scorelist {
@@ -41,7 +47,7 @@
 .gameclock {
   font-family: 'DSEG7-Modern', monospace;
   color: #777;
-  font-size: 2em;
+  font-size: 3em;
 }
 
 .status {

@@ -4,15 +4,11 @@
   
   (:require 
     [reagent.core :as reagent :refer [atom]]
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [foosball-score.util :refer [teams colors]]))
 
 ;; --------------------------------
 ;; Atoms and constants
-(defonce teams
-  [:gold :black])
-
-(defonce colors
-  (hash-map :gold "#D4AF37" :black "#000000"))
 
 (defonce scores
   (atom (zipmap teams (cycle [0]))))
@@ -69,8 +65,8 @@
   (let [ss @scores
         color (team colors)]
     [:div.scorecard {:class (scorecard-class (team ss))}
-      [:div {:style {:color color :text-align align}} (string/upper-case (name team))]
-      [:div {:style {:color color :text-align align}} (team ss)]]))
+      [:h4 {:style {:color color :text-align align}} (string/upper-case (name team))]
+      [:h1 {:style {:color color :text-align align}} (team ss)]]))
 
 (defn scoreboard
   "Create the game's scoreboard"

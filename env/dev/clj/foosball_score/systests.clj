@@ -3,7 +3,8 @@
   {:author "Ian McIntyre"}
   (:require
     [foosball-score.repl :refer [server-running?]]
-    [foosball-score.handler :as handler :refer [push-event!]]))
+    [foosball-score.handler :as handler :refer [push-event!]]
+    [foosball-score.util :refer [teams]]))
 
 (def ^:private banner
   (apply str (take 78 (cycle [\-]))))
@@ -31,14 +32,18 @@
 
 (defn- seconds [sec] (* sec 1000))
 
+(defn- team-valid? [team] (some #(= % team) teams))
+
 (defsystest game-to
   "Play a game to score by pushing events through websockets"
   [score winner]
-  (dotimes [n score]
-    (step (push-event! :drop) "Droping ball" (seconds 2))
-    (step (push-event! winner) 
-          (str "Point " (+ 1 n) " for " (name winner))
-          (seconds 2))))
+  (if (not (team-valid? winner))
+    (println (str "Not a valid team: " (name winner)))
+    (dotimes [n score]
+      (step (push-event! :drop) "Droping ball" (seconds 2))
+      (step (push-event! winner) 
+            (str "Point " (+ 1 n) " for " (name winner))
+            (seconds 2)))))
 
 (defsystest ignore-double-drop
   "The UI ignores double-drop events"
@@ -54,13 +59,16 @@
 (defsystest ignore-double-goal
   "The UI ignores double-goal events"
   [scorer]
-  (println "Test assumes a 'Waiting for ball drop' state...")
-  (step (push-event! :drop)
-        "Drop ball..."
-        (seconds 2))
-  (step (push-event! scorer)
-        (str "Point for " (name scorer))
-        (seconds 2))
-  (step (push-event! scorer)
-        (str "Another point for " (name scorer)))
-  (println "Observe that the score for " (name scorer) " is still 1"))
+  (if (not (team-valid? scorer))
+    (println (str "Not a valid team: " (name scorer)))
+    (do
+      (println "Test assumes a 'Waiting for ball drop' state...")
+      (step (push-event! :drop)
+            "Drop ball..."
+            (seconds 2))
+      (step (push-event! scorer)
+            (str "Point for " (name scorer))
+            (seconds 2))
+      (step (push-event! scorer)
+            (str "Another point for " (name scorer)))
+      (println "Observe that the score for " (name scorer) " is still 1"))))
