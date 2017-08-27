@@ -17,6 +17,9 @@
 (defonce scores
   (atom (zipmap teams (cycle [0]))))
 
+(defonce score-times
+  (atom '[]))
+
 (defonce max-score 5)
 
 ;; --------------------------------
@@ -25,7 +28,8 @@
   "Start a new game"
   []
   (reset! scores
-    (zipmap teams (cycle [0]))))
+    (zipmap teams (cycle [0])))
+  (reset! score-times []))
 
 (defn game-over?
   "Returns true if the game is over, else false"
@@ -35,32 +39,43 @@
 
 (defn point-for
   "Increment a point for one of the teams"
-  [team]
+  [team time]
   (if (and (some #(= team %) teams) (not (game-over?)))  
-    (swap! scores update-in [team] inc))
-    @scores)
+    (do 
+      (swap! scores update-in [team] inc)
+      (swap! score-times conj {:team team :time time}))))
 
 (defn- scorecard-class
   "Change the scorecards class"
   [score]
   (if (>= score max-score)
     "blink"))
-
 ;; --------------------------------
 ;; Components
 
+(defn score-time-list
+  "Show the time of each score"
+  []
+  [:div.scorelist
+    (for [item @score-times] ^{:key item}
+      (let [time (item :time)
+            team (item :team)
+            color (team colors)]
+        [:div {:style {:color color}} time]))])
+
 (defn scoreboard-content
   "A team's scoreboard content"
-  [team]
+  [team align]
   (let [ss @scores
         color (team colors)]
     [:div.scorecard {:class (scorecard-class (team ss))}
-      [:h4 {:style {:color color}} (string/upper-case (name team))]
-      [:h1 {:style {:color color}} (team ss)]]))
+      [:div {:style {:color color :text-align align}} (string/upper-case (name team))]
+      [:div {:style {:color color :text-align align}} (team ss)]]))
 
 (defn scoreboard
   "Create the game's scoreboard"
   [left right]
   [:div.scoreboard
-    [scoreboard-content left]
-    [scoreboard-content right]])
+    [scoreboard-content left :right]
+    [score-time-list]
+    [scoreboard-content right :left]])

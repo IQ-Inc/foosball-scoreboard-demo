@@ -37,22 +37,23 @@
       (swap! game-time inc)
       t)))
 
-(defn start-game
+(defn start-game!
   "Start the game clock"
   []
   (let [interval @game-interval]
     (if (nil? interval)
       (reset! game-interval (js/setInterval game-time-tick 1000)))))
 
-(defn pause-game
+(defn pause-game!
   "Pause the game clock"
   []
-  (swap! game-interval js/clearInterval))
+  (swap! game-interval js/clearInterval)
+  (game-time-str))
 
 (defn new-game
   "Reset the game clock"
   []
-  (pause-game)
+  (pause-game!)
   (reset! game-time 0))
 
 (defn- paused?

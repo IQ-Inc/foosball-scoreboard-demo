@@ -37,7 +37,7 @@
   "Handle ball drops"
   [_]
   (when (and (not (= status/status? :playing)) (not (game/game-over?)))
-    (clock/start-game)
+    (clock/start-game!)
     (status/change-status :playing)))
 
 ;; -------------------------
@@ -46,8 +46,8 @@
   "General score handler for a team"
   [team _]
   (when (= (status/status?) :playing)
-    (clock/pause-game)
-    (game/point-for team)
+    (let [time (clock/pause-game!)]
+      (game/point-for team time))
     (if (game/game-over?)
       (status/change-status :game-over)
       (status/change-status team))))

@@ -1,37 +1,45 @@
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
 
 .body-container {
-  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-  max-width: 600px;
-  margin: 0 auto;
-  padding-top: 40px;
-  -webkit-font-smoothing: antialiased;
-  font-size: 1.125em;
-  color: #333;
-  line-height: 1.5em;
+  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, monospace;
+  margin-top: 100px
 }
 
 .scoreboard {
+  font-family: 'DSEG7-Modern', monospace;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
   display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: row;
-  flex-direction: row;
-  -webkit-align-items: center;
-  align-items: center;
-  -webkit-justify-content: center;
+  -webkit-flex-flow: row;
+  flex-flow: row;
   justify-content: center;
 }
 
 .scorecard {
-  text-align: center;
-  font-family: 'DSEG7-Modern', sans-serif;
   margin-left: 20px;
   margin-right: 20px;
-  font-size: 4em;
+  font-weight: bold;
+  font-size: 6em;
+  height: 2.1em;
+  width: 4em;
+}
+
+.scorelist {
+  width: 200px;
+  height: 150px;
+  font-weight: bold;
+  font-size: 1.1em;
+  line-height: 1.4em;
+  text-align: center;
 }
 
 .gameclock {
-  font-family: 'DSEG7-Modern', sans-serif;
+  font-family: 'DSEG7-Modern', monospace;
   color: #777;
   font-size: 2em;
 }
