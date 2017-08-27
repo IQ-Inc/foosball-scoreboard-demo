@@ -1,15 +1,11 @@
 (ns foosball-score.core
   "Links the components of the frontend, and establishes the websocket handling"
   {:author "Ian McIntyre"}
-
-  (:require-macros
-   [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require
    [reagent.core :as reagent :refer [atom]]
    [secretary.core :as secretary :include-macros true]
    [accountant.core :as accountant]
-   [cljs.core.async :as async :refer (<! >! put! chan)]
-   [taoensso.sente  :as sente :refer (cb-success?)]
+   [taoensso.sente  :as sente]
    [foosball-score.game :as game]
    [foosball-score.clock :as clock]
    [foosball-score.status :as status]
@@ -37,12 +33,20 @@
     (clock/new-game)
     (status/change-status :waiting)))
 
+(defn ball-drop
+  "Handle ball drops"
+  [_]
+  (when (and (not (= status/status? :playing)) (not (game/game-over?)))
+    (clock/start-game)
+    (status/change-status :playing)))
+
 ;; -------------------------
 ;; Foosball event handlers
 (defn- score-handler
   "General score handler for a team"
   [team _]
   (when (= (status/status?) :playing)
+    (clock/pause-game)
     (game/point-for team)
     (if (game/game-over?)
       (status/change-status :game-over)
@@ -58,9 +62,7 @@
 
 (defmethod events/foosball-event :drop
   [event]
-  (when (and (not (= status/status? :playing)) (not (game/game-over?)))
-    (clock/start-game)
-    (status/change-status :playing)))
+  (ball-drop event))
 
 ;; -------------------------
 ;; Views
