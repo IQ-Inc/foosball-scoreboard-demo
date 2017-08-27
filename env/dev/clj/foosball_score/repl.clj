@@ -31,3 +31,8 @@
 (defn stop-server []
   (.stop @server)
   (reset! server nil))
+
+(defn server-running?
+  "Check if the server is running"
+  []
+  (not (nil? @server)))
