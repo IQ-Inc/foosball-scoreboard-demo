@@ -1,4 +1,3 @@
-@import url('https://fontlibrary.org/face/segment7');
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
 
 .body-container {
@@ -25,14 +24,14 @@
 
 .scorecard {
   text-align: center;
-  font-family: 'Segment7Standard', sans-serif;
+  font-family: 'DSEG7-Modern', sans-serif;
   margin-left: 20px;
   margin-right: 20px;
   font-size: 4em;
 }
 
 .gameclock {
-  font-family: 'Segment7Standard', sans-serif;
+  font-family: 'DSEG7-Modern', sans-serif;
   color: #777;
   font-size: 2em;
 }

@@ -26,7 +26,7 @@
         secs (mod t 60)]
     (str 
       (gstring/format "%02d" mins)
-      "."
+      ":"
       (gstring/format "%02d" secs))))
 
 (defn- game-time-tick
