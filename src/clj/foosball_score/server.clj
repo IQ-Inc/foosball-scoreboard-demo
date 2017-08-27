@@ -11,9 +11,9 @@
 
 (def event-lookup
   { "BD" :drop        ; black drop - not specified as a unique event
-    "YD" :drop        ; yellow drop - not specified as a unique event
+    "GD" :drop        ; gold drop - not specified as a unique event
     "BG" :black       ; black goal
-    "YG" :yellow })   ; yellow goal
+    "GG" :gold })     ; gold goal
 
 (def ^:private serial-event-chan (chan))
 

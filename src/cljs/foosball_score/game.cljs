@@ -9,10 +9,10 @@
 ;; --------------------------------
 ;; Atoms and constants
 (defonce teams
-  [:yellow :black])
+  [:gold :black])
 
 (defonce colors
-  (hash-map :yellow "#D4AF37" :black "#000000"))
+  (hash-map :gold "#D4AF37" :black "#000000"))
 
 (defonce scores
   (atom (zipmap teams (cycle [0]))))

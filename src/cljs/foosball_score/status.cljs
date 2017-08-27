@@ -39,7 +39,7 @@
     :waiting (const "waiting for ball drop...")
     :playing (const "playing")
     :game-over (const "game over")
-    :yellow pick-team-message
+    :gold pick-team-message
     :black pick-team-message))
 
 ;; --------------------------------

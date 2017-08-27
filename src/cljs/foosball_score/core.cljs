@@ -52,9 +52,9 @@
       (status/change-status :game-over)
       (status/change-status team))))
 
-(defmethod events/foosball-event :yellow
+(defmethod events/foosball-event :gold
   [event]
-  (score-handler :yellow event))
+  (score-handler :gold event))
 
 (defmethod events/foosball-event :black
   [event]
@@ -69,7 +69,7 @@
 
 (defn home-page []
   [:div
-   [game/scoreboard :black :yellow]
+   [game/scoreboard :black :gold]
    [clock/game-clock]
    [status/status-msg]
    [:div.scoreboard
