@@ -5,7 +5,7 @@
   (:require-macros [foosball-score.util :refer [const]])
   (:require
     [reagent.core :as reagent :refer [atom]]
-    [foosball-score.game :refer [colors]]
+    [foosball-score.util :refer [colors]]
     [clojure.string :as string]))
 
 ;; --------------------------------
@@ -39,7 +39,7 @@
     :waiting (const "waiting for ball drop...")
     :playing (const "playing")
     :game-over (const "game over")
-    :yellow pick-team-message
+    :gold pick-team-message
     :black pick-team-message))
 
 ;; --------------------------------

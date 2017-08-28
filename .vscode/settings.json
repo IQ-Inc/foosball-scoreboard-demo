@@ -1,0 +1,16 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/target": true,
+        "figwheel_server.log": true
+    },
+
+    "search.exclude": {
+        "*.log": true,
+        "*.lein-*": true
+    }
+}

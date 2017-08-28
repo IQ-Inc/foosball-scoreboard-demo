@@ -25,15 +25,16 @@ and updates will be pushed to all connected clients.
 
 ## Serial events
 
-The server expects the following serial events to correspond to specific
+The server will handle any serial message that is suffixed with a newline (ASCII
+`10`). The server expects the following serial events to correspond to specific
 foosball events:
 
 | ASCII `char`          |    Foosball Event    |
 | --------------------- | -------------------- |
-|  `'D'`                | Black ball drop      |
-|  `'C'`                | Yellow ball drop     |
-|  `'B'`                | Black scores a goal  |
-|  `'A'`                | Yellow scores a goal |
+|  `'BD'`               | Black ball drop      |
+|  `'GD'`               | Gold ball drop       |
+|  `'BG'`               | Black scores a goal  |
+|  `'GG'`               | Gold scores a goal   |
 
 The codes are configurable in the `foosball-score.serial` namespace.
 

@@ -1,10 +1,25 @@
 (ns foosball-score.repl
   (:use foosball-score.handler
         figwheel-sidecar.repl-api
+        foosball-score.events
         [ring.middleware file-info file]
-        [org.httpkit.server :refer [run-server]]))
+        [org.httpkit.server :refer [run-server]]
+        [clojure.core.async :refer [go chan >! close!]]))
 
 (defonce server (atom nil))
+(defonce event-chan (atom nil))
+
+(defn serial-msg!
+  "Routes msg through the event handler. Does nothing if the channel is nil."
+  [msg]
+  (if-let [chan @event-chan]
+    (go (>! chan msg)))
+  nil)
+
+(defn- emit-event!
+  "Passed into the event handler to print out the translation"
+  [event]
+  (println  "-- Event translation -- " event))
 
 (defn get-handler []
   ;; #'app expands to (var app) so that when we reload our code,
@@ -26,8 +41,17 @@
                    {:port port
                     :auto-reload? true
                     :join? false}))
+    (reset! event-chan
+            (make-event-handler! (juxt push-event! emit-event!)))
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []
   (.stop @server)
-  (reset! server nil))
+  (reset! server nil)
+  (let [chan @event-chan] (close! chan))
+  (reset! event-chan nil))
+
+(defn server-running?
+  "Check if the server is running"
+  []
+  (not (nil? @server)))

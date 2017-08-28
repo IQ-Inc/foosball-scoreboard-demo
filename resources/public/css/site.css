@@ -1,40 +1,53 @@
-@import url('https://fontlibrary.org/face/segment7');
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
 
 .body-container {
-  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-  max-width: 600px;
-  margin: 0 auto;
-  padding-top: 40px;
-  -webkit-font-smoothing: antialiased;
-  font-size: 1.125em;
-  color: #333;
-  line-height: 1.5em;
+  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, monospace;
+  margin-top: 100px
 }
 
 .scoreboard {
+  font-family: 'DSEG7-Modern', monospace;
+  padding: 0;
+  margin-top: 40px;
+  list-style: none;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
   display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: row;
-  flex-direction: row;
-  -webkit-align-items: center;
-  align-items: center;
-  -webkit-justify-content: center;
+  -webkit-flex-flow: row;
+  flex-flow: row;
   justify-content: center;
 }
 
+p, h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
 .scorecard {
-  text-align: center;
-  font-family: 'Segment7Standard', sans-serif;
   margin-left: 20px;
   margin-right: 20px;
+  font-weight: bold;
   font-size: 4em;
+  height: 2.1em;
+  width: 4em;
+  margin-bottom: 100px;
+}
+
+.scorelist {
+  width: 200px;
+  height: 150px;
+  font-weight: bold;
+  font-size: 1.1em;
+  line-height: 1.4em;
+  text-align: center;
 }
 
 .gameclock {
-  font-family: 'Segment7Standard', sans-serif;
+  font-family: 'DSEG7-Modern', monospace;
   color: #777;
-  font-size: 2em;
+  font-size: 3em;
 }
 
 .status {

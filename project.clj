@@ -1,4 +1,4 @@
-(defproject foosball-score "0.0.1-SNAPSHOT"
+(defproject foosball-score "0.1.0-SNAPSHOT"
   :description "Demo foosball scoreboard"
   :url "https://github.com/IQ-Inc/foosball-scoreboard-demo"
   :license {:name "Eclipse Public License"
@@ -46,7 +46,8 @@
 
   :minify-assets
   {:assets
-   {"resources/public/css/site.min.css" "resources/public/css/site.css"}}
+   {"resources/public/css/site.min.css" "resources/public/css/site.css"
+    "resources/public/css/dseg.min.css" "resources/public/css/dseg.css"}}
 
   :cljsbuild
   {:builds {:min
