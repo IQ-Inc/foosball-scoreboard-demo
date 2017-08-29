@@ -46,10 +46,11 @@
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []
-  (.stop @server)
-  (reset! server nil)
-  (let [chan @event-chan] (close! chan))
-  (reset! event-chan nil))
+  (when-not (nil? @server)
+    (@server :timeout 100)
+    (reset! server nil)
+    (close! @event-chan)
+    (reset! event-chan nil)))
 
 (defn server-running?
   "Check if the server is running"
