@@ -71,4 +71,4 @@
             (seconds 2))
       (step (push-event! scorer)
             (str "Another point for " (name scorer)))
-      (println "Observe that the score for " (name scorer) " is still 1"))))
+      (println "Observe that the score for" (name scorer) "is still 1"))))

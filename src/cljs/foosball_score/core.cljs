@@ -10,6 +10,7 @@
    [foosball-score.clock :as clock]
    [foosball-score.status :as status]
    [foosball-score.events :as events]
+   [foosball-score.players :as players]
    [foosball-score.util :refer [ws-url]]))
 
 ;; -------------------------
@@ -29,6 +30,7 @@
   "Start a new game"
   []
   (do
+    (players/reset-players!)
     (game/new-game)
     (clock/new-game)
     (status/change-status :waiting)))
@@ -64,16 +66,19 @@
   [event]
   (ball-drop event))
 
+(defmethod events/foosball-event :default
+  [event]
+  (players/add-player! (:event event)))
+
 ;; -------------------------
 ;; Views
 
 (defn home-page []
   [:div
+   [clock/game-clock new-game]
    [game/scoreboard :black :gold]
-   [clock/game-clock]
    [status/status-msg]
-   [:div.scoreboard
-    [:input.button {:type "button" :value "NEW GAME" :on-click new-game}]]])
+   [players/player-list]])
 
 ;; -------------------------
 ;; Routes
@@ -92,7 +97,7 @@
 (defn mount-root []
   (do
     (reagent/render [current-page] (.getElementById js/document "app")))
-  (sente/start-client-chsk-router! ch-chsk events/foosball-event))
+  (sente/start-client-chsk-router! ch-chsk events/websocket-event))
 
 (defn init! []
   (accountant/configure-navigation!

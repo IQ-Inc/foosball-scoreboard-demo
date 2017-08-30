@@ -73,6 +73,6 @@
 ;; Components
 (defn game-clock
   "The game clock"
-  []
-  [:div.gameclock.scoreboard {:class (game-clock-class)}
+  [new-game-callback]
+  [:div.gameclock.scoreboard {:class (game-clock-class) :on-click new-game-callback}
     [:h2 (game-time-str)]])
