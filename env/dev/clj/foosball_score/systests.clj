@@ -67,8 +67,22 @@
             "Drop ball..."
             (seconds 2))
       (step (push-event! scorer)
-            (str "Point for " (name scorer))
+            (str "Point for" (name scorer))
             (seconds 2))
       (step (push-event! scorer)
-            (str "Another point for " (name scorer)))
+            (str "Another point for" (name scorer)))
       (println "Observe that the score for" (name scorer) "is still 1"))))
+
+(defsystest close-game
+  "The score is 4-4, with one winner"
+  [winner]
+  (if-not (team-valid? winner)
+    (println "Not a valid team:" winner)
+    (do
+      (dotimes [n 4]
+        (step (push-event! :drop) "Drop ball" (seconds 1))
+        (step (push-event! :gold) (str "Gold point " (inc n)) (seconds 1))
+        (step (push-event! :drop) "Drop ball" (seconds 1))
+        (step (push-event! :black) (str "Black point " (inc n)) (seconds 1)))
+      (step (push-event! :drop) "Final drop" (seconds 1))
+      (step (push-event! winner) "Winning goal" (seconds 1)))))
