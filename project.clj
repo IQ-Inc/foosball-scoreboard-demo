@@ -49,6 +49,10 @@
    {"resources/public/css/site.min.css" "resources/public/css/site.css"
     "resources/public/css/dseg.min.css" "resources/public/css/dseg.css"}}
 
+  :test-selectors {:default (complement :integration)
+                   :integration :integration
+                   :all (constantly true)}
+
   :cljsbuild
   {:builds {:min
             {:source-paths ["src/cljs" "src/cljc" "env/prod/cljs"]

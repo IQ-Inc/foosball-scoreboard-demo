@@ -22,8 +22,8 @@
 
 (defmethod on-msg-size :default
   [msg]
-  (if-let [found-user (persist/lookup-player-by-id msg)]
-    found-user
+  (if-let [claimed-user (persist/athlete-name (persist/lookup-athlete msg))]
+    claimed-user
     msg))
 
 (defn make-event-handler!

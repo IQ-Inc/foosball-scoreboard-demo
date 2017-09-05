@@ -13,4 +13,10 @@
   [x]
   `(fn [~(gensym)] ~x))
 
+(defmacro nilsafe
+  "Wraps a function f and makes it safe against nil input"
+  [f]
+  `(fn [x#]
+    (if-not (nil? x) (~f x#))))
+
 (defonce ws-url "/chsk")
