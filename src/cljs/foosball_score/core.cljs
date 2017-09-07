@@ -74,7 +74,7 @@
 ;; Views
 
 (defn home-page []
-  [:div
+  [:div {:tab-index "1" :style {:outline "none"} :on-key-press (fn [_] (new-game))}
    [clock/game-clock new-game]
    [game/scoreboard :black :gold]
    [status/status-msg]
