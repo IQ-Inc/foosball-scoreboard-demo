@@ -65,7 +65,7 @@
   (let [ss @scores
         color (team colors)]
     [:div.scorecard {:class (scorecard-class (team ss))}
-      [:h4 {:style {:color color :text-align align}} (string/upper-case (name team))]
+      [:h6 {:style {:color color :text-align align}} (string/upper-case (name team))]
       [:h1 {:style {:color color :text-align align}} (team ss)]]))
 
 (defn scoreboard
