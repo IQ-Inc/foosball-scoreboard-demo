@@ -86,3 +86,12 @@
         (step (push-event! :black) (str "Black point " (inc n)) (seconds 1)))
       (step (push-event! :drop) "Final drop" (seconds 1))
       (step (push-event! winner) "Winning goal" (seconds 1)))))
+
+(defsystest sign-in-players
+  "Sign in four players"
+  []
+  (do
+    (step (push-event! "John") "Sign in John" 500)
+    (step (push-event! "Paul") "Sign in Paul" 500)
+    (step (push-event! "George") "Sign in George" 500)
+    (step (push-event! "Ringo") "Sign in Ringo" 500)))
