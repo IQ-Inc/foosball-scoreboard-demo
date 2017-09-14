@@ -14,7 +14,16 @@
   (:require
     [foosball-score.util :refer [nilsafe]]))
 
-(defonce ^:private in-mem-db (atom (hash-map)))
+;;;;;;;;;;;;;;;;;;;;;
+;; Hard-coded players
+;;;;;;;;;;;;;;;;;;;;;
+(def ian    "18A632")
+(def mikel  "18A644")
+(def mikes  "18A64E")
+(def tim    "18A642")
+(def ryan   "18A63C")
+(def eric   "18A631")
+(def norb   "18A639")
 
 (defn- make-new-athlete
   "Make the structure for a new athlete"
@@ -25,6 +34,26 @@
       (hash-map
         :wins 0           ;; athlete wins
         :losses 0)))      ;; athlete losses
+
+(defmacro make-player
+  [id name]
+  (list id (assoc (make-new-athlete) :name name)))
+
+(defmacro with-name
+  [name]
+  `(assoc (make-new-athlete) :name ~name))
+
+(def hard-coded-players
+  (hash-map
+    ian   (with-name "IAN")
+    mikel (with-name "MIKE L")
+    mikes (with-name "MIKE S")
+    tim   (with-name "TIM")
+    ryan  (with-name "RYAN")
+    eric  (with-name "ERIC")
+    norb  (with-name "NORB")))
+
+(defonce ^:private in-mem-db (atom hard-coded-players))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Athlete convenience methods
