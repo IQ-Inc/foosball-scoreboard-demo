@@ -5,27 +5,11 @@
     #?(:cljs [reagent.core :refer [atom]])
     [clojure.data :refer [diff]]))
 
-;; Application state
-;; components are defined below.
-(def state (atom (hash-map)))
-
-(defmacro defstate
-  "Binds a starting state to a var, and adds it into the state"
-  [name starting]
-  `(do
-    (swap! state merge ~starting)
-    (defonce ~name ~starting)))
-
-(defn update-state!
-  "Replaces the current state with new-state"
-  [new-state]
-  (reset! state new-state))
-
 ;;;;;;;;;;;;;
 ;; Game state
 ;;;;;;;;;;;;;
 
-(defstate new-game-state
+(def new-game-state
   {:status :waiting
    :game-mode :first-to-max})
 
@@ -33,7 +17,7 @@
 ;; Score state
 ;;;;;;;;;;;;;;
 
-(defstate new-score-state
+(def new-score-state
   {:scores {:black 0 :gold 0}
    :max-score 5})
 
@@ -41,7 +25,7 @@
 ;; Team state
 ;;;;;;;;;;;;;
 
-(defstate new-team-state
+(def new-team-state
   {:teams {:black {:offense nil :defense nil}
            :gold  {:offense nil :defense nil}}
    :next-player [:black :offense]})
@@ -68,6 +52,15 @@
   (reduce merge {} [new-game-state
                     new-team-state
                     new-score-state]))
+
+;; Application state
+;; components are defined below.
+(defonce state (atom new-state))
+
+(defn update-state!
+  "Replaces the current state with new-state"
+  [new-state]
+  (reset! state new-state))
 
 ;;;;;;;;;;;;;;;;;;
 ;; State consumers

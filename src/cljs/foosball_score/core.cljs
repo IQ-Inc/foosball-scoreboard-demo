@@ -11,7 +11,8 @@
    [foosball-score.status :as status]
    [foosball-score.events :as events]
    [foosball-score.players :as players]
-   [foosball-score.util :refer [ws-url]]))
+   [foosball-score.util :refer [ws-url]]
+   [foosball-score.state :as state]))
 
 ;; -------------------------
 ;; Websocket setup
@@ -54,21 +55,9 @@
       (status/change-status :game-over)
       (status/change-status team))))
 
-(defmethod events/foosball-event :gold
-  [event]
-  (score-handler :gold event))
-
-(defmethod events/foosball-event :black
-  [event]
-  (score-handler :black event))
-
-(defmethod events/foosball-event :drop
-  [event]
-  (ball-drop event))
-
 (defmethod events/foosball-event :default
   [event]
-  (players/add-player! (:event event)))
+  (state/update-state! (:event event)))
 
 ;; -------------------------
 ;; Views
