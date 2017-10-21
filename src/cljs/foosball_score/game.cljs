@@ -5,7 +5,8 @@
   (:require 
     [reagent.core :as reagent :refer [atom]]
     [clojure.string :as string]
-    [foosball-score.util :refer [teams colors]]))
+    [foosball-score.util :refer [teams colors]]
+    [foosball-score.state :refer [state]]))
 
 ;; --------------------------------
 ;; Atoms and constants

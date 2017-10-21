@@ -6,12 +6,8 @@
   (:require
     [reagent.core :as reagent :refer [atom]]
     [foosball-score.util :refer [colors]]
+    [foosball-score.state :refer [state]]
     [clojure.string :as string]))
-
-;; --------------------------------
-;; Atoms
-(defonce status
-  (atom :waiting))
 
 ;; --------------------------------
 ;; Status message implementations
@@ -48,26 +44,20 @@
 (defn- get-status
   "Get the current status message"
   []
-  (let [stat @status
+  (let [stat (:status @state)
         msg-fn (stat status-messages)]
     (string/upper-case (msg-fn stat))))
-
-(defn change-status
-  "Change the status to s"
-  [stat]
-  (if (contains? status-messages stat)
-    (reset! status stat)))
 
 (defn- status-style
   "Get the corresponding status style"
   []
-  (let [stat @status]
+  (let [stat (:status @state)]
     (hash-map :color (stat colors))))
 
 (defn status?
   "Get the status"
   []
-  (let [stat @status]
+  (let [stat (:status @state)]
     stat))
 
 ;; --------------------------------
