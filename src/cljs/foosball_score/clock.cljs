@@ -14,7 +14,7 @@
   [state]
   (select-keys state [:time :status]))
 
-(defn- game-time-str
+(defn game-time-str
   "Show the game time as minutes and seconds (example: 72:55)"
   [t]
   (let [mins (int (/ t 60))

@@ -2,14 +2,11 @@
   "Defines the game scoring mechanics and the scoreboard behavior"
   {:author "Ian McIntyre"}
   
-  (:require 
-    [reagent.core :as reagent :refer [atom]]
+  (:require
     [clojure.string :as string]
+    [foosball-score.clock :refer [game-time-str]]
     [foosball-score.util :refer [teams colors]]
     [foosball-score.state :refer [game-over? who-is-winning]]))
-
-(defonce score-times
-  (atom '[]))
 
 ;; --------------------------------
 ;; Functions
@@ -17,7 +14,7 @@
 (defn state-depends
   "Describes the filtering of the state specific for this component"
   [state]
-  (select-keys state [:scores :game-mode]))
+  (select-keys state [:scores :game-mode :score-times]))
 
 (defn- scorecard-class
   "Change the scorecards class"
@@ -31,10 +28,10 @@
 
 (defn score-time-list
   "Show the time of each score"
-  []
+  [score-times]
   [:div.scorelist
-    (for [item @score-times] ^{:key item}
-      (let [time (item :time)
+    (for [item score-times] ^{:key item}
+      (let [time (game-time-str (item :time))
             team (item :team)
             color (team colors)]
         [:div {:style {:color color}} time]))])
@@ -54,5 +51,5 @@
   [state left right]
   [:div.scoreboard
     [scoreboard-content state left :right]
-    [score-time-list]
+    [score-time-list (:score-times state)]
     [scoreboard-content state right :left]])
