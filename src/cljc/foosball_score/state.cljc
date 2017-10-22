@@ -44,13 +44,21 @@
            first)
       (first transitions))))
 
+;;;;;;;;;;;;;
+;; Time state
+;;;;;;;;;;;;;
+
+(def new-time-state
+  {:time 0 :score-times []})
+
 ;;;;;;;;;;;;
 ;; New state
 ;;;;;;;;;;;;
 (def new-state
   (reduce merge {} [new-game-state
                     new-team-state
-                    new-score-state]))
+                    new-score-state
+                    new-time-state]))
 
 ;; Application state
 ;; components are defined below.
@@ -123,14 +131,24 @@
         next-state (assoc state :next-player next-next-player)]
     (assoc-in next-state (cons :teams next-player) player)))
 
+(defn- update-score-times
+  [{:keys [status time] :as state} team]
+  (update state :score-times conj {:time time :team team}))
+
 (defn event->state
-  "Updates the provided state given an event"
-  [state event]
+  "Updates the provided state given an event. Returns the next state, or nil
+  if there is no update."
+  [{:keys [status] :as state} event]
   (if (game-over? state) state
     (case event
+      :tick (if (= status :playing) (update state :time inc) state)
       :drop (change-status state :playing)
       (:black :gold) (let [state (point-for state event)]
                        (if (game-over? state)
-                         (change-status state :game-over)
-                         (change-status state event)))
+                         (-> state 
+                             (#(change-status % :game-over))
+                             (update-score-times (who-is-winning state)))
+                         (-> state
+                             (#(change-status % event))
+                             (update-score-times event))))
       (add-player state event))))

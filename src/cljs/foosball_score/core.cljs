@@ -34,7 +34,6 @@
 
 (defn- notify-server
   [state]
-  (state/update-state! state)
   (chsk-send! [:foosball/v0 state]))
 
 ;; -------------------------

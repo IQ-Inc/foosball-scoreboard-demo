@@ -13,14 +13,11 @@
 
 ;; --------------------------------
 ;; Functions
+
 (defn state-depends
+  "Describes the filtering of the state specific for this component"
   [state]
   (select-keys state [:scores :game-mode]))
-
-(defn new-game
-  "Start a new game"
-  []
-  (reset! score-times []))
 
 (defn- scorecard-class
   "Change the scorecards class"

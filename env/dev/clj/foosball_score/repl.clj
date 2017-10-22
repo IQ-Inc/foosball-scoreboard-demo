@@ -3,6 +3,7 @@
         figwheel-sidecar.repl-api
         foosball-score.events
         foosball-score.server
+        foosball-score.tick
         [ring.middleware file-info file]
         [org.httpkit.server :refer [run-server]]
         [clojure.core.async :refer [go chan >! close!]]))
@@ -45,6 +46,7 @@
     (reset! event-chan
             (make-event-handler! #(emit-event! (event-state-handler %))))
     (listen-for-ws)
+    (call-every-ms every-second 1000)
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []

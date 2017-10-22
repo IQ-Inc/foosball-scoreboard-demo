@@ -6,6 +6,7 @@
     [foosball-score.serial :as serial]
     [foosball-score.events :as events]
     [foosball-score.state :as state]
+    [foosball-score.tick :as tick]
     [config.core :refer [env]]
     [org.httpkit.server :refer [run-server]])
   (:gen-class :main true))
@@ -19,9 +20,16 @@
   [event]
   (let [state @state/state
         next-state (state/event->state state event)]
-    (push-event! next-state)
-    (state/update-state! next-state)
-    next-state))
+    (if (nil? next-state) state
+      (do
+        (push-event! next-state)
+        (state/update-state! next-state)
+        next-state))))
+
+(defn every-second
+  "Invoked every second to sync the time across clients"
+  []
+  (event-state-handler :tick))
 
 (defn -main [& args]
   (let [port (Integer/parseInt (or (env :port) "3000"))
@@ -33,4 +41,5 @@
       (events/make-event-handler!
         event-state-handler))
     (run-server app {:port port :join? false})
-    (listen-for-ws)))
+    (listen-for-ws)
+    (tick/call-every-ms every-second 1000)))
