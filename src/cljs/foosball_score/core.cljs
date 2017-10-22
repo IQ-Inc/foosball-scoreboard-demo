@@ -28,13 +28,6 @@
 ;; -------------------------
 ;; Functions
 
-(defn new-game
-  "Start a new game"
-  []
-  (do
-    (game/new-game)
-    (clock/new-game)))
-
 (defmethod events/foosball-event :default
   [event]
   (state/update-state! (:event event)))
@@ -48,9 +41,10 @@
 ;; Views
 
 (defn home-page []
-  [:div {:tab-index "1" :style {:outline "none"} :on-key-press (fn [_] (new-game))}
+  [:div {:tab-index "1" :style {:outline "none"}
+        :on-key-press (fn [_] ((partial notify-server state/new-state)))}
    [clock/game-clock (partial notify-server state/new-state)]
-   [game/scoreboard :black :gold]
+   [game/scoreboard (game/state-depends @state) :black :gold]
    [status/status-msg (:status @state)]
    [players/player-list @state notify-server]])
 

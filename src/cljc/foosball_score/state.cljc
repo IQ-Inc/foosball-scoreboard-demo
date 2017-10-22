@@ -18,8 +18,7 @@
 ;;;;;;;;;;;;;;
 
 (def new-score-state
-  {:scores {:black 0 :gold 0}
-   :max-score 5})
+  {:scores {:black 0 :gold 0 :max-score 5}})
 
 ;;;;;;;;;;;;;
 ;; Team state
@@ -66,13 +65,23 @@
 ;; State consumers
 ;;;;;;;;;;;;;;;;;;
 
+(defn who-is-winning
+  "Returns the key of the winning team, or nil if the game is tied"
+  [{:keys [scores]}]
+  (let [[b g] [(:black scores) (:gold scores)]
+        d (- b g)]
+    (cond
+      (< d 0) :gold
+      (> d 0) :black
+      (= d 0) nil)))
+
 (defn game-over?
   "Based on the provided state, returns true if the game is
   over, else false."
-  [{:keys [game-mode scores max-score] :as state}]
+  [{:keys [game-mode scores] :as state}]
   (case game-mode
-    :first-to-max (or (>= (:gold scores) max-score)
-                      (>= (:black scores) max-score))
+    :first-to-max (or (>= (:gold scores) (:max-score scores))
+                      (>= (:black scores) (:max-score scores)))
     :win-by-two (let [g (:gold scores)
                       b (:black scores)
                       d (- (max b g) (min b g))]
