@@ -26,7 +26,7 @@
   (let [[offense defense] [(:offense players) (:defense players)]]
     [:div.player {:style {:color (team colors)}}
       (if (not (nil? offense)) [player team :offense players])
-      (if (or (not (nil? offense)) (not (nil? defense)))
+      (if (and (not (nil? offense)) (not (nil? defense)))
         [:i {:class "fa fa-refresh" :on-click swapper}])
       (if (not (nil? defense)) [player team :defense players])]))
 
