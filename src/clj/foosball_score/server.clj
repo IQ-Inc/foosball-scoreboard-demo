@@ -12,7 +12,8 @@
 
 (defmethod foosball-event :default
   [event]
-  (state/update-state! event))
+  (state/update-state! event)
+  (push-event! event))
 
 (defn event-state-handler
   [event]
