@@ -35,10 +35,6 @@
         :wins 0           ;; athlete wins
         :losses 0)))      ;; athlete losses
 
-(defmacro make-player
-  [id name]
-  (list id (assoc (make-new-athlete) :name name)))
-
 (defmacro with-name
   [name]
   `(assoc (make-new-athlete) :name ~name))
@@ -54,6 +50,21 @@
     norb  (with-name "NORB")))
 
 (defonce ^:private in-mem-db (atom hard-coded-players))
+
+;;;;;;;;;;
+;; Avatars
+;;;;;;;;;;
+
+;; Avatar icon names will follow the convention
+;;    avatar-face-icon-#.png
+;; where # is a number starting at 1 and a sequential increment from
+;; the previous avatar icon name. When you add a new avatar, increment
+;; number-of-avatars appropriately.
+(def all-avatar-imgs
+  (let [number-of-avatars 4]  ;; Change me if there are more avatars
+    (take number-of-avatars
+      (map #(str "/img/avatar-face-icon-" % ".png")
+        (iterate inc 1)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Athlete convenience methods

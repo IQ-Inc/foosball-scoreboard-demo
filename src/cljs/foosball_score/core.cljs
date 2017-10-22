@@ -11,6 +11,7 @@
    [foosball-score.status :as status]
    [foosball-score.events :as events]
    [foosball-score.players :as players]
+   [foosball-score.state :refer [state]]
    [foosball-score.util :refer [ws-url]]
    [foosball-score.state :as state]))
 
@@ -31,7 +32,6 @@
   "Start a new game"
   []
   (do
-    (players/reset-players!)
     (game/new-game)
     (clock/new-game)))
 
@@ -39,15 +39,20 @@
   [event]
   (state/update-state! (:event event)))
 
+(defn- notify-server
+  [state]
+  (state/update-state! state)
+  (chsk-send! [:foosball/v0 state]))
+
 ;; -------------------------
 ;; Views
 
 (defn home-page []
   [:div {:tab-index "1" :style {:outline "none"} :on-key-press (fn [_] (new-game))}
-   [clock/game-clock new-game]
+   [clock/game-clock (partial notify-server state/new-state)]
    [game/scoreboard :black :gold]
    [status/status-msg]
-   [players/player-list]])
+   [players/player-list @state notify-server]])
 
 ;; -------------------------
 ;; Routes

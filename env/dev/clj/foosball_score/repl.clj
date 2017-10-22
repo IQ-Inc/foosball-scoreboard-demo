@@ -44,6 +44,7 @@
                     :join? false}))
     (reset! event-chan
             (make-event-handler! #(emit-event! (event-state-handler %))))
+    (listen-for-ws)
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []

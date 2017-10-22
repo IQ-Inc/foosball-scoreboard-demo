@@ -2,13 +2,17 @@
   "Server and serial startup"
   {:author "Ian McIntyre"}
   (:require 
-    [foosball-score.handler :refer [app push-event!]]
+    [foosball-score.handler :refer [app push-event! listen-for-ws foosball-event]]
     [foosball-score.serial :as serial]
     [foosball-score.events :as events]
     [foosball-score.state :as state]
     [config.core :refer [env]]
     [org.httpkit.server :refer [run-server]])
   (:gen-class :main true))
+
+(defmethod foosball-event :default
+  [event]
+  (state/update-state! event))
 
 (defn event-state-handler
   [event]
@@ -27,4 +31,5 @@
     (serial/add-serial-subscriber
       (events/make-event-handler!
         event-state-handler))
-    (run-server app {:port port :join? false})))
+    (run-server app {:port port :join? false})
+    (listen-for-ws)))
