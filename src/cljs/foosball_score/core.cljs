@@ -51,7 +51,7 @@
   [:div {:tab-index "1" :style {:outline "none"} :on-key-press (fn [_] (new-game))}
    [clock/game-clock (partial notify-server state/new-state)]
    [game/scoreboard :black :gold]
-   [status/status-msg]
+   [status/status-msg (:status @state)]
    [players/player-list @state notify-server]])
 
 ;; -------------------------

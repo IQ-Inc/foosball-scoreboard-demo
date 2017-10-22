@@ -6,7 +6,6 @@
   (:require
     [reagent.core :as reagent :refer [atom]]
     [foosball-score.util :refer [colors]]
-    [foosball-score.state :refer [state]]
     [clojure.string :as string]))
 
 ;; --------------------------------
@@ -43,28 +42,20 @@
 
 (defn- get-status
   "Get the current status message"
-  []
-  (let [stat (:status @state)
-        msg-fn (stat status-messages)]
+  [stat]
+  (let [msg-fn (stat status-messages)]
     (string/upper-case (msg-fn stat))))
 
 (defn- status-style
   "Get the corresponding status style"
-  []
-  (let [stat (:status @state)]
-    (hash-map :color (stat colors))))
-
-(defn status?
-  "Get the status"
-  []
-  (let [stat (:status @state)]
-    stat))
+  [stat]
+  (hash-map :color (stat colors)))
 
 ;; --------------------------------
 ;; Components
 
 (defn status-msg
   "The status message component"
-  []
-  [:div.scoreboard.status {:style (status-style)}
-    [:p (get-status)]])
+  [stat]
+  [:div.scoreboard.status {:style (status-style stat)}
+    [:p (get-status stat)]])
