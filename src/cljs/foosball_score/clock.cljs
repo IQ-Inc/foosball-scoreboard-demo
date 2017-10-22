@@ -18,6 +18,11 @@
 
 ;; --------------------------------
 ;; Functions
+
+(defn state-depends
+  [state]
+  (select-keys state [:status]))
+
 (defn- game-time-str
   "Show the game time as minutes and seconds (example: 72:55)"
   []
@@ -73,6 +78,12 @@
 ;; Components
 (defn game-clock
   "The game clock"
-  [new-game-callback]
-  [:div.gameclock.scoreboard {:class (game-clock-class) :on-click new-game-callback}
-    [:h2 (game-time-str)]])
+  [state new-game-callback]
+  (let [status (:status state)]
+    (case status
+      :playing (start-game!)
+      (:black :gold :game-over) (pause-game!)
+      (new-game))
+    [:div.gameclock.scoreboard {:class (game-clock-class) :on-click new-game-callback}
+    [:h2 (game-time-str)]]))
+  

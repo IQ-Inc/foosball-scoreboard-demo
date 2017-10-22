@@ -4,7 +4,6 @@
   
   (:require-macros [foosball-score.util :refer [const]])
   (:require
-    [reagent.core :as reagent :refer [atom]]
     [foosball-score.util :refer [colors]]
     [clojure.string :as string]))
 

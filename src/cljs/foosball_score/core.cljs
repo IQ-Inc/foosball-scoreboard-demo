@@ -43,7 +43,7 @@
 (defn home-page []
   [:div {:tab-index "1" :style {:outline "none"}
         :on-key-press (fn [_] ((partial notify-server state/new-state)))}
-   [clock/game-clock (partial notify-server state/new-state)]
+   [clock/game-clock (clock/state-depends @state) (partial notify-server state/new-state)]
    [game/scoreboard (game/state-depends @state) :black :gold]
    [status/status-msg (:status @state)]
    [players/player-list @state notify-server]])
