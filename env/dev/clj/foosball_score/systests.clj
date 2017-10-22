@@ -2,7 +2,7 @@
   "End-to-end automated tests"
   {:author "Ian McIntyre"}
   (:require
-    [foosball-score.repl :refer [server-running?]]
+    [foosball-score.repl :refer [server-running? serial-msg!]]
     [foosball-score.handler :as handler :refer [push-event!]]
     [foosball-score.util :refer [teams]]))
 
@@ -34,14 +34,19 @@
 
 (defn- team-valid? [team] (some #(= % team) teams))
 
+(def team->goal-event
+  {:gold "GG" :black "BG"})
+
+(def dropball "BD")
+
 (defsystest game-to
   "Play a game to score by pushing events through websockets"
   [score winner]
   (if (not (team-valid? winner))
     (println (str "Not a valid team: " (name winner)))
     (dotimes [n score]
-      (step (push-event! :drop) "Droping ball" (seconds 2))
-      (step (push-event! winner) 
+      (step (serial-msg! dropball) "Droping ball" (seconds 2))
+      (step (serial-msg! (winner team->goal-event)) 
             (str "Point " (+ 1 n) " for " (name winner))
             (seconds 2)))))
 
@@ -49,10 +54,10 @@
   "The UI ignores double-drop events"
   []
   (println "Test assumes a 'Waiting for ball drop' state...")
-  (step (push-event! :drop)
+  (step (serial-msg! dropball)
         "Sent first drop..."
         (seconds 2))
-  (step (push-event! :drop)
+  (step (serial-msg! dropball)
         "Sent second drop")
   (println "Observe that the clock is still ticking, and the scores are both 0"))
 
@@ -63,13 +68,13 @@
     (println (str "Not a valid team: " (name scorer)))
     (do
       (println "Test assumes a 'Waiting for ball drop' state...")
-      (step (push-event! :drop)
+      (step (serial-msg! dropball)
             "Drop ball..."
             (seconds 2))
-      (step (push-event! scorer)
+      (step (serial-msg! (scorer team->goal-event))
             (str "Point for" (name scorer))
             (seconds 2))
-      (step (push-event! scorer)
+      (step (serial-msg! (scorer team->goal-event))
             (str "Another point for" (name scorer)))
       (println "Observe that the score for" (name scorer) "is still 1"))))
 
@@ -80,18 +85,18 @@
     (println "Not a valid team:" winner)
     (do
       (dotimes [n 4]
-        (step (push-event! :drop) "Drop ball" (seconds 1))
-        (step (push-event! :gold) (str "Gold point " (inc n)) (seconds 1))
-        (step (push-event! :drop) "Drop ball" (seconds 1))
-        (step (push-event! :black) (str "Black point " (inc n)) (seconds 1)))
-      (step (push-event! :drop) "Final drop" (seconds 1))
-      (step (push-event! winner) "Winning goal" (seconds 1)))))
+        (step (serial-msg! dropball) "Drop ball" (seconds 1))
+        (step (serial-msg! (:gold team->goal-event)) (str "Gold point " (inc n)) (seconds 1))
+        (step (serial-msg! dropball) "Drop ball" (seconds 1))
+        (step (serial-msg! (:black team->goal-event)) (str "Black point " (inc n)) (seconds 1)))
+      (step (serial-msg! dropball) "Final drop" (seconds 1))
+      (step (serial-msg! (winner team->goal-event)) "Winning goal" (seconds 1)))))
 
 (defsystest sign-in-players
   "Sign in four players"
   []
   (do
-    (step (push-event! "John") "Sign in John" 500)
-    (step (push-event! "Paul") "Sign in Paul" 500)
-    (step (push-event! "George") "Sign in George" 500)
-    (step (push-event! "Ringo") "Sign in Ringo" 500)))
+    (step (serial-msg! "John") "Sign in John" 500)
+    (step (serial-msg! "Paul") "Sign in Paul" 500)
+    (step (serial-msg! "George") "Sign in George" 500)
+    (step (serial-msg! "Ringo") "Sign in Ringo" 500)))
