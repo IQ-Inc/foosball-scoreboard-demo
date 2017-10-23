@@ -115,13 +115,3 @@
                            :black {:offense "Ryan" :defense "Mike"}}
                     :next-player [:black :offense]}]
       (is (= (state/add-player data "Ian") expected)))))
-
-(deftest offense-test
-  (testing "Get's the offensive player"
-    (is (= (state/offense {:teams {:black {:offense "Offense" :defense nil}}} :black) "Offense"))
-    (is (nil? (state/offense {:teams {:gold {:offense nil :defense "Defense"}}} :gold)))))
-
-(deftest defense-test
-  (testing "Get's the defensive player"
-    (is (nil? (state/defense {:teams {:black {:offense "Offense" :defense nil}}} :black)))
-    (is (= (state/defense {:teams {:gold {:offense nil :defense "Defense"}}} :gold) "Defense"))))

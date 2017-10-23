@@ -105,18 +105,11 @@
       state
       (update-in state [:scores team] inc)))
 
-;; Describe positional associations for the team state
-(let [player (fn [which]
-               (fn [{:keys [teams]} team]
-                 (which (team teams))))]
-  (def offense (player :offense))
-  (def defense (player :defense)))
-
 (defn swap-players
   "Swap the players on team"
   [state team]
-  (let [offense (offense state team)
-        defense (defense state team)]
+  (let [offense (-> state :teams team :offense)
+        defense (-> state :teams team :defense)]
     (assoc-in state [:teams team] {:offense defense :defense offense})))
 
 (defn change-status
@@ -142,13 +135,14 @@
   (if (game-over? state) state
     (case event
       :tick (if (= status :playing) (update state :time inc) state)
-      :drop (change-status state :playing)
-      (:black :gold) (let [state (point-for state event)]
-                       (if (game-over? state)
-                         (-> state 
-                             (#(change-status % :game-over))
-                             (update-score-times (who-is-winning state)))
-                         (-> state
-                             (#(change-status % event))
-                             (update-score-times event))))
+      :drop (if (not (= status :playing)) (change-status state :playing))
+      (:black :gold) (if (= status :playing)
+                       (let [state (point-for state event)]
+                         (if (game-over? state)
+                           (-> state 
+                               (#(change-status % :game-over))
+                               (update-score-times (who-is-winning state)))
+                           (-> state
+                               (#(change-status % event))
+                               (update-score-times event)))))
       (add-player state event))))
