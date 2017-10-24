@@ -113,8 +113,9 @@
     (assoc-in state [:teams team] {:offense defense :defense offense})))
 
 (defn change-status
-  "Change the status of the state"
+  "Change the status of the state if the status is valid"
   [state status]
+  {:pre [(some #{status} [:waiting :playing :black :gold :game-over])]}
   (assoc state :status status))
 
 (defn add-player
@@ -132,17 +133,17 @@
   "Updates the provided state given an event. Returns the next state, or nil
   if there is no update."
   [{:keys [status] :as state} event]
-  (if (game-over? state) state
+  (if (game-over? state) nil
     (case event
-      :tick (if (= status :playing) (update state :time inc) state)
+      :tick (if (= status :playing) (update state :time inc))
       :drop (if (not (= status :playing)) (change-status state :playing))
       (:black :gold) (if (= status :playing)
                        (let [state (point-for state event)]
                          (if (game-over? state)
                            (-> state 
-                               (#(change-status % :game-over))
+                               (change-status :game-over)
                                (update-score-times (who-is-winning state)))
                            (-> state
-                               (#(change-status % event))
+                               (change-status event)
                                (update-score-times event)))))
       (add-player state event))))

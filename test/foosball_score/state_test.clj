@@ -115,3 +115,64 @@
                            :black {:offense "Ryan" :defense "Mike"}}
                     :next-player [:black :offense]}]
       (is (= (state/add-player data "Ian") expected)))))
+
+(deftest event-state-transition-test
+  (testing "Drop ball transitions to playing"
+    (let [expected (assoc state/new-state :status :playing)]
+      (is (= expected (state/event->state state/new-state :drop)))))
+
+  (testing "Double-drop does nothing and returns nil for no update"
+    (let [actual (-> state/new-state
+                     (state/event->state :drop)
+                     (state/event->state :drop))]
+      (is (nil? actual))))
+
+  (testing "No goals when not in playing state"
+    (doseq [team [:black :gold]]
+      (is (nil? (state/event->state state/new-state team)))))
+
+  (testing "Goals occur when in playing state"
+    (doseq [team [:black :gold]]
+      (let [input (-> state/new-state 
+                      (assoc :status :playing)
+                      (assoc :time 42))
+            expected (-> state/new-state
+                         (update-in [:scores team] inc)
+                         (assoc :time 42)
+                         (assoc :status team)
+                         (update :score-times conj {:time 42 :team team}))]
+        (is (= expected (state/event->state input team))))))
+
+  (testing "Ignores double goals and returns nil for no update"
+    (doseq [team [:black :gold]]
+      (let [input (assoc state/new-state :status :playing)
+            actual (-> input
+                       (state/event->state team)
+                       (state/event->state team))]
+        (is (nil? actual)))))
+
+  (testing "Clock ticks increment time by one when playing"
+    (let [input (assoc state/new-state :status :playing)
+          expected (update input :time inc)]
+      (is (= expected (state/event->state input :tick)))))
+
+  (testing "Time does not increment for any other status"
+    (doseq [status [:waiting :drop :black :gold :game-over]]
+      (let [input (assoc state/new-state :status status)]
+        (is (nil? (state/event->state input :tick))))))
+
+  (testing "Game over when team scores 5"
+    (doseq [team [:black :gold]]
+      (let [input    (-> state/new-state
+                         (assoc :scores {:black 4 :gold 4 :max-score 5})
+                         (assoc :status :playing)
+                         (assoc :time 42))
+            expected (-> input
+                         (update-in [:scores team] inc)
+                         (assoc :status :game-over)
+                         (update :score-times conj {:time 42 :team team}))]
+        (is (= expected (state/event->state input team))))))
+
+  (testing "Game over state has no update"
+    (is (nil? (state/event->state
+                (assoc-in state/new-state [:scores :black] 5) :drop)))))
