@@ -129,21 +129,54 @@
   [{:keys [status time] :as state} team]
   (update state :score-times conj {:time time :team team}))
 
-(defn event->state
-  "Updates the provided state given an event. Returns the next state, or nil
-  if there is no update."
-  [{:keys [status] :as state} event]
-  (if (game-over? state) nil
-    (case event
-      :tick (if (= status :playing) (update state :time inc))
-      :drop (if (not (= status :playing)) (change-status state :playing))
-      (:black :gold) (if (= status :playing)
-                       (let [state (point-for state event)]
-                         (if (game-over? state)
-                           (-> state 
-                               (change-status :game-over)
-                               (update-score-times (who-is-winning state)))
-                           (-> state
-                               (change-status event)
-                               (update-score-times event)))))
-      (add-player state event))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Event -> state transitions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmulti event->state
+  "Defines transitions into new states based on events. If the game is over,
+  no custom event is dispatched, and the return is nil. Implementers shall
+  either return a new state, or nil if there is no update."
+  (fn [state event]
+    (if (game-over? state) nil event)))
+
+;; Clock ticks
+(defmethod event->state :tick
+  [{:keys [status] :as state} _]
+  (if (= status :playing) (update state :time inc)))
+
+;; Drop ball
+(defmethod event->state :drop
+  [{:keys [status] :as state} _]
+  (if (not (= status :playing)) (change-status state :playing)))
+
+;; Implementation for black / gold goals
+(defn- goal->state
+  [{:keys [status] :as state} team]
+  (if (= status :playing)
+    (let [state (point-for state team)]
+      (if (game-over? state)
+        (-> state 
+            (change-status :game-over)
+            (update-score-times (who-is-winning state)))
+        (-> state
+            (change-status team)
+            (update-score-times team))))))
+
+;; Black goal
+(defmethod event->state :black
+  [state team]
+  (goal->state state team))
+
+;; Gold goal
+(defmethod event->state :gold
+  [state team]
+  (goal->state state team))
+
+;; Default event assumes a player sign in
+(defmethod event->state :default
+  [state player]
+  (add-player state player))
+
+;; nil occurs by default when the game is over
+(defmethod event->state nil [_ _] nil)
