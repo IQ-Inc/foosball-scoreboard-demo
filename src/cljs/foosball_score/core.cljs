@@ -34,18 +34,36 @@
 
 (defn- notify-server
   [state]
+  (state/update-state! state)
   (chsk-send! [:foosball/v0 state]))
+
+(defmulti keypress-handler
+  "Defines handling of keypresses"
+  (fn [state chr] chr))
+
+(defmethod keypress-handler \b
+  [state _]
+  (notify-server (state/swap-players state :black)))
+
+(defmethod keypress-handler \g
+  [state _]
+  (notify-server (state/swap-players state :gold)))
+
+(defmethod keypress-handler :default
+  [state chr]
+  (println chr)
+  (notify-server state/new-state))
 
 ;; -------------------------
 ;; Views
 
-(defn home-page []
+(defn home-page [state]
   [:div {:tab-index "1" :style {:outline "none"}
-        :on-key-press (fn [_] ((partial notify-server state/new-state)))}
-   [clock/game-clock (clock/state-depends @state) (partial notify-server state/new-state)]
-   [game/scoreboard (game/state-depends @state) :black :gold]
-   [status/status-msg (:status @state)]
-   [players/player-list @state notify-server]])
+        :on-key-press (fn [c] (keypress-handler state (js/String.fromCharCode (.-charCode c))))}
+   [clock/game-clock (clock/state-depends state) (partial notify-server state/new-state)]
+   [game/scoreboard (game/state-depends state) :black :gold]
+   [status/status-msg (:status state)]
+   [players/player-list state notify-server]])
 
 ;; -------------------------
 ;; Routes
@@ -53,7 +71,7 @@
 (def page (atom #'home-page))
 
 (defn current-page []
-  [:div [@page]])
+  [:div [@page @state]])
 
 (secretary/defroute "/" []
   (reset! page #'home-page))
