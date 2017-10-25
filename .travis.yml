@@ -1,8 +1,11 @@
 language: clojure
+script: lein do uberjar, test
 deploy:
   provider: releases
   api_key:
     secure: bENcn3kvRKSlhXMzXf/efKbhONSy7JnhxEYW63/SZrjM45OFJ+yWSqC4dLhUqLacjKknGyatnp7Pkf6dwK88TzIxCpeFPk4d7OxYio2L52F5pm0yIR5Dz2ac/nm9SENRkX3uqkRol9iDfSJJ+8+IpaMygMm2NO9t9JHa1AppGcl+yQaCKs8sW9DQs/hVfXOGnsnoq6dQ+6GV0wLnftYTsonH/G92iq6W8fE71JWZr3oduo4tcbFDLBHRVPpO1cXPlo2FOJKuSsmgBJZy4HsVyR7ak1O28JRtfAhFD8bow4ucm+4eYuEYWhc3QlrhcWj0XbDkyl79m9ALhYSzauDfyUVkxHweKtImxeuGSzRRWxoZEvzHN97usXWF4Yt30Y6xPt6U3D/E8SKL+dOQlRSq3CD3mEEHddm8ZAVYO40YkSYOxoSWTzjUgMobUMw9hUScl+srF7keiN9YjNx5KjTNrh7MU/PlFH9ab2zcuH6lNWHAuB54yUnCReNA3YNRkair0DP7dMZxh6RBtwZMs4+TnHL9FY2v1Gw84XpOJka4jbOz6J1pZ4myDSyssPbNue7XMAYYDllPDUTAFsJ6hy8aVOeCQd+mvastznHOxaJgLeg1oUzLAdyAflQSAi1gY/wlyrwoEycXxBZqCszN4Bqrej9QXjhFrcsZJq8olnO9YhI=
   file: target/foosball-score.jar
+  skip_cleanup: true
   on:
     repo: IQ-Inc/foosball-scoreboard-demo
+    tags: true
