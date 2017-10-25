@@ -1,7 +1,6 @@
 (ns foosball-score.game
-  "Defines the game scoring mechanics and the scoreboard behavior"
+  "Defines the scoreboard"
   {:author "Ian McIntyre"}
-  
   (:require
     [clojure.string :as string]
     [foosball-score.clock :refer [game-time-str]]

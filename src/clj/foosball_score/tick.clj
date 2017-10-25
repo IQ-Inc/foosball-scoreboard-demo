@@ -1,5 +1,5 @@
 (ns foosball-score.tick
-  "Tick tock"
+  "Provides means of dispatching function calls with millisecond resolution"
   {:author "Ian McIntyre"}
   (:require
     [clojure.core.async :as async :refer [timeout >! <! go-loop chan]]))

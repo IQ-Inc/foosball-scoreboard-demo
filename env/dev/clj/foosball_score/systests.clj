@@ -96,7 +96,7 @@
   "Sign in four players"
   []
   (do
-    (step (serial-msg! "John") "Sign in John" 500)
-    (step (serial-msg! "Paul") "Sign in Paul" 500)
+    (step (serial-msg! "-John-") "Sign in John" 500)
+    (step (serial-msg! "~Paul~") "Sign in Paul" 500)
     (step (serial-msg! "George") "Sign in George" 500)
-    (step (serial-msg! "Ringo") "Sign in Ringo" 500)))
+    (step (serial-msg! "Ringo.") "Sign in Ringo" 500)))

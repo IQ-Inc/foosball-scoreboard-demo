@@ -1,5 +1,7 @@
 # Foosball scoreboard demo
 
+[![Build Status](https://travis-ci.org/IQ-Inc/foosball-scoreboard-demo.svg?branch=master)](https://travis-ci.org/IQ-Inc/foosball-scoreboard-demo)
+
 First prototype of a foosball scoreboard, written in Clojure and ClojureScript.
 
 ![Scoreboard demo](./docs/img/scoreboard-demo.png)
@@ -8,7 +10,7 @@ First prototype of a foosball scoreboard, written in Clojure and ClojureScript.
 
 - Java 1.8+
 - A serial device (ex. Arduino)
-- Tested on Chrome. Safari definitely does not show the cool segment font...
+- Tested on Chrome and Firefox
 
 ## Getting started
 
@@ -36,7 +38,7 @@ foosball events:
 |  `'BG'`               | Black scores a goal  |
 |  `'GG'`               | Gold scores a goal   |
 
-The codes are configurable in the `foosball-score.serial` namespace.
+The codes are configurable in the Clojure `foosball-score.events` namespace.
 
 ## Developing
 

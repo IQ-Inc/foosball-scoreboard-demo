@@ -1,5 +1,7 @@
 (ns foosball-score.core
-  "Links the components of the frontend, and establishes the websocket handling"
+  "Links the components of the frontend, and establishes the websocket handling
+
+  This is the entrypoint for the frontend."
   {:author "Ian McIntyre"}
   (:require
    [reagent.core :as reagent :refer [atom]]
@@ -9,11 +11,10 @@
    [foosball-score.game :as game]
    [foosball-score.clock :as clock]
    [foosball-score.status :as status]
-   [foosball-score.events :as events]
+   [foosball-score.socket :as socket]
    [foosball-score.players :as players]
-   [foosball-score.state :refer [state]]
    [foosball-score.util :refer [ws-url]]
-   [foosball-score.state :as state]))
+   [foosball-score.state :as state :refer [state]]))
 
 ;; -------------------------
 ;; Websocket setup
@@ -28,7 +29,7 @@
 ;; -------------------------
 ;; Functions
 
-(defmethod events/foosball-event :default
+(defmethod socket/foosball-event :default
   [event]
   (state/update-state! (:event event)))
 
@@ -87,7 +88,7 @@
 (defn mount-root []
   (do
     (reagent/render [current-page] (.getElementById js/document "app")))
-  (sente/start-client-chsk-router! ch-chsk events/websocket-event))
+  (sente/start-client-chsk-router! ch-chsk socket/websocket-event))
 
 (defn init! []
   (accountant/configure-navigation!

@@ -1,5 +1,5 @@
-(ns foosball-score.events
-  "Event multimethod definition, and default event handling"
+(ns foosball-score.socket
+  "Socket input handling from the server"
   {:author "Ian McIntyre"})
 
 (defn- foosball-version-tag

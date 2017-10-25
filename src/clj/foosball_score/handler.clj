@@ -59,16 +59,17 @@
     (doseq [uid uids]
       (chsk-send! uid [:foosball/v0 {:event event}]))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO don't have this duplicated across the CLJS / CLJ boundary
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Websocket multimethods
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmulti websocket-event
-  "Handle a foosball event"
+  "Handle a websocket event"
   :id)
 
-(defmulti foosball-event :event)
+(defmulti foosball-event
+  "Handle foosball-specific events"
+  :event)
 
 (defmethod websocket-event :foosball/v0
   [event]
@@ -79,5 +80,6 @@
   nil)
 
 (defn listen-for-ws
+  "Enable websocket listening"
   []
   (sente/start-server-chsk-router! ch-chsk websocket-event))

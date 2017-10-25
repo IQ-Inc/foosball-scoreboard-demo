@@ -1,5 +1,9 @@
 (ns foosball-score.events
-  "Server serial <-> websocket event handling"
+  "Raw event translation
+
+  The module was originally developed to handle events dispatched over serial.
+  The module may also serve as a translation interface for anything dispatching
+  multi-character messages."
   {:author "Ian McIntyre"}
   (:require
     [clojure.core.async :refer [go go-loop chan <! >!]]
@@ -12,19 +16,28 @@
     "GG" :gold })     ; gold goal
 
 (defmulti on-msg-size
-  "Handle messages by size"
+  "Handle messages by raw message size"
   count)
 
+;; Handle simple serial messages, like
+;; those expected from the Arduino
 (defmethod on-msg-size 2
   [msg]
   (if-let [game-event (get event-lookup msg)]
     game-event))
 
-(defmethod on-msg-size :default
+;; These are expected to be sign-in events
+;; from an ID card. Example ID: 18A632
+(defmethod on-msg-size (count "18A632")
   [msg]
   (if-let [claimed-user (persist/athlete-name (persist/lookup-athlete msg))]
     claimed-user
     msg))
+
+;; Anything else is not handled
+(defmethod on-msg-size :default
+  [_]
+  nil)
 
 (defn make-event-handler!
   "Create an event handler, and returns a channel that will be awaited on

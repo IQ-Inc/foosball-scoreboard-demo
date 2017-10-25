@@ -1,5 +1,5 @@
 (ns foosball-score.players
-  "Foosball player display"
+  "Foosball team and player display"
   (:require
     [foosball-score.util :refer [teams colors]]
     [foosball-score.state :refer [swap-players]]

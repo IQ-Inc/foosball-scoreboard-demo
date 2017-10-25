@@ -1,5 +1,9 @@
 (ns foosball-score.state
-  "State of all the things"
+  "State of all the things
+
+  The namespace defines the components representing 'state' and the structure
+  of the state. This module is shared across the client and server; it shall
+  build in each environment."
   {:author "Ian McIntyre"}
   (:require
     #?(:cljs [reagent.core :refer [atom]])
@@ -42,6 +46,8 @@
            (drop-while #(not (= % next-player)))
            next
            first)
+      ;; Otherwise, return the first possible transition
+      ;; so we can get back into sync
       (first transitions))))
 
 ;;;;;;;;;;;;;
@@ -69,9 +75,16 @@
   [new-state]
   (reset! state new-state))
 
-;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State consumers
-;;;;;;;;;;;;;;;;;;
+;;
+;; All public functions actions will operate upon the global state.
+;; The state will be the first argument of any public function.
+;; Private methods may operate upon specific sections of the state.
+;;
+;; Consider using map destructuring to simplify public methods that
+;; only need certain components of the entire state.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn who-is-winning
   "Returns the key of the winning team, or nil if the game is tied"

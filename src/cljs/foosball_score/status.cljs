@@ -1,7 +1,6 @@
 (ns foosball-score.status
   "Defines the status messages and the status component"
   {:author "Ian McIntyre"}
-  
   (:require-macros [foosball-score.util :refer [const]])
   (:require
     [foosball-score.util :refer [colors]]
