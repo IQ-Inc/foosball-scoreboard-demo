@@ -51,7 +51,6 @@
 
 (defmethod keypress-handler :default
   [state chr]
-  (println chr)
   (notify-server state/new-state))
 
 ;; -------------------------
