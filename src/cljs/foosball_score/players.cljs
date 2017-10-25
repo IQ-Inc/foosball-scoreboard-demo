@@ -1,7 +1,6 @@
 (ns foosball-score.players
   "Foosball player display"
   (:require
-    [reagent.core :as reagent :refer [atom]]
     [foosball-score.util :refer [teams colors]]
     [foosball-score.state :refer [swap-players]]
     [goog.string :as gstring]))
@@ -10,6 +9,11 @@
 ;; Players n'at
 ;;;;;;;;;;;;;;;
 
+(defn state-depends
+  "State filtering for player components"
+  [state]
+  (select-keys state [:next-player :teams]))
+
 (defn- position-icon
   "Returns a font awesome icon based on the player's tactical position"
   [pos color]
@@ -17,22 +21,27 @@
     [:i {:class icon}]))
 
 (defn- player
-  [team position players]
-  (let [display (if (position players) (position players) "???")]
-  [:div
-    [:div [position-icon position (team colors)] (gstring/unescapeEntities " &middot; ") display]]))
+  "Component that shows the player position icon and name"
+  [team position next-player players]
+  (let [display (if (position players) (position players) "???")
+        outline (if (= next-player [team position]) "dotted" nil)]
+  [:div {:style {:outline outline :margin 5}}
+    [:div {:style {:padding 5}}
+      [position-icon position (team colors)]
+      (gstring/unescapeEntities " &middot; ") display]]))
 
 (defn- team-player-list
-  "The player list component"
-  [team players swapper]
-  (let [[offense defense] [(:offense players) (:defense players)]]
+  "The one to two players on a team"
+  [{:keys [teams next-player] :as state} team swapper]
+  (let [[offense defense] [(-> teams team :offense) (-> teams team :defense)]]
     [:div.player {:style {:color (team colors)}}
-      [player team :offense players]
+      [player team :offense next-player (team teams)]
       [:i {:class "fa fa-refresh" :on-click swapper}]
-      [player team :defense players]]))
+      [player team :defense next-player (team teams)]]))
 
 (defn player-list
-  [{:keys [teams] :as state} notify]
+  "The two to four players in the game"
+  [state swapper]
   [:div.playerlist
-    [team-player-list :black (:black teams) (partial notify (swap-players state :black))]
-    [team-player-list :gold (:gold teams) (partial notify (swap-players state :gold))]])
+    [team-player-list state :black (partial swapper :black)]
+    [team-player-list state :gold (partial swapper :gold)]])

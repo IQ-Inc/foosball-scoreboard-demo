@@ -41,13 +41,19 @@
   "Defines handling of keypresses"
   (fn [state chr] chr))
 
+(defn- swap-team
+  "Accepts the state, then returns a function that will swap the team players
+  based on that state"
+  [state]
+  (fn [team] (notify-server (state/swap-players state team))))
+
 (defmethod keypress-handler \b
   [state _]
-  (notify-server (state/swap-players state :black)))
+  ((swap-team state) :black))
 
 (defmethod keypress-handler \g
   [state _]
-  (notify-server (state/swap-players state :gold)))
+  ((swap-team state) :gold))
 
 (defmethod keypress-handler :default
   [state chr]
@@ -62,7 +68,7 @@
    [clock/game-clock (clock/state-depends state) (partial notify-server state/new-state)]
    [game/scoreboard (game/state-depends state) :black :gold]
    [status/status-msg (:status state)]
-   [players/player-list state notify-server]])
+   [players/player-list (players/state-depends state) (swap-team state)]])
 
 ;; -------------------------
 ;; Routes
