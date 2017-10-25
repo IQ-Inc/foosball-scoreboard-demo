@@ -58,3 +58,26 @@
   (if-let [uids (:any @connected-uids)]
     (doseq [uid uids]
       (chsk-send! uid [:foosball/v0 {:event event}]))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO don't have this duplicated across the CLJS / CLJ boundary
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmulti websocket-event
+  "Handle a foosball event"
+  :id)
+
+(defmulti foosball-event :event)
+
+(defmethod websocket-event :foosball/v0
+  [event]
+  (foosball-event (get-in event [:event 1])))
+
+(defmethod websocket-event :default
+  [event]
+  nil)
+
+(defn listen-for-ws
+  []
+  (sente/start-server-chsk-router! ch-chsk websocket-event))

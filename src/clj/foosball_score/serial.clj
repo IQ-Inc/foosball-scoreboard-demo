@@ -3,7 +3,7 @@
   {:author "Ian McIntyre"}
   
   (:require
-    [clojure.core.async :as async  :refer [>! go]]
+    [clojure.core.async :as async :refer [>! go]]
     [clojure.string :refer [trim]]
     [serial.core :as serial]))
 

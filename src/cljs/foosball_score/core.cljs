@@ -11,7 +11,9 @@
    [foosball-score.status :as status]
    [foosball-score.events :as events]
    [foosball-score.players :as players]
-   [foosball-score.util :refer [ws-url]]))
+   [foosball-score.state :refer [state]]
+   [foosball-score.util :refer [ws-url]]
+   [foosball-score.state :as state]))
 
 ;; -------------------------
 ;; Websocket setup
@@ -26,59 +28,47 @@
 ;; -------------------------
 ;; Functions
 
-(defn new-game
-  "Start a new game"
-  []
-  (do
-    (players/reset-players!)
-    (game/new-game)
-    (clock/new-game)
-    (status/change-status :waiting)))
-
-(defn ball-drop
-  "Handle ball drops"
-  [_]
-  (when (and (not (= status/status? :playing)) (not (game/game-over?)))
-    (clock/start-game!)
-    (status/change-status :playing)))
-
-;; -------------------------
-;; Foosball event handlers
-(defn- score-handler
-  "General score handler for a team"
-  [team _]
-  (when (= (status/status?) :playing)
-    (let [time (clock/pause-game!)]
-      (game/point-for team time))
-    (if (game/game-over?)
-      (status/change-status :game-over)
-      (status/change-status team))))
-
-(defmethod events/foosball-event :gold
-  [event]
-  (score-handler :gold event))
-
-(defmethod events/foosball-event :black
-  [event]
-  (score-handler :black event))
-
-(defmethod events/foosball-event :drop
-  [event]
-  (ball-drop event))
-
 (defmethod events/foosball-event :default
   [event]
-  (players/add-player! (:event event)))
+  (state/update-state! (:event event)))
+
+(defn- notify-server
+  [state]
+  (state/update-state! state)
+  (chsk-send! [:foosball/v0 state]))
+
+(defmulti keypress-handler
+  "Defines handling of keypresses"
+  (fn [state chr] chr))
+
+(defn- swap-team
+  "Accepts the state, then returns a function that will swap the team players
+  based on that state"
+  [state]
+  (fn [team] (notify-server (state/swap-players state team))))
+
+(defmethod keypress-handler \b
+  [state _]
+  ((swap-team state) :black))
+
+(defmethod keypress-handler \g
+  [state _]
+  ((swap-team state) :gold))
+
+(defmethod keypress-handler :default
+  [state chr]
+  (notify-server state/new-state))
 
 ;; -------------------------
 ;; Views
 
-(defn home-page []
-  [:div {:tab-index "1" :style {:outline "none"} :on-key-press (fn [_] (new-game))}
-   [clock/game-clock new-game]
-   [game/scoreboard :black :gold]
-   [status/status-msg]
-   [players/player-list]])
+(defn home-page [state]
+  [:div {:tab-index "1" :style {:outline "none"}
+        :on-key-press (fn [c] (keypress-handler state (js/String.fromCharCode (.-charCode c))))}
+   [clock/game-clock (clock/state-depends state) (partial notify-server state/new-state)]
+   [game/scoreboard (game/state-depends state) :black :gold]
+   [status/status-msg (:status state)]
+   [players/player-list (players/state-depends state) (swap-team state)]])
 
 ;; -------------------------
 ;; Routes
@@ -86,7 +76,7 @@
 (def page (atom #'home-page))
 
 (defn current-page []
-  [:div [@page]])
+  [:div [@page @state]])
 
 (secretary/defroute "/" []
   (reset! page #'home-page))

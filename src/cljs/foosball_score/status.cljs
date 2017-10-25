@@ -4,14 +4,8 @@
   
   (:require-macros [foosball-score.util :refer [const]])
   (:require
-    [reagent.core :as reagent :refer [atom]]
     [foosball-score.util :refer [colors]]
     [clojure.string :as string]))
-
-;; --------------------------------
-;; Atoms
-(defonce status
-  (atom :waiting))
 
 ;; --------------------------------
 ;; Status message implementations
@@ -47,34 +41,20 @@
 
 (defn- get-status
   "Get the current status message"
-  []
-  (let [stat @status
-        msg-fn (stat status-messages)]
-    (string/upper-case (msg-fn stat))))
-
-(defn change-status
-  "Change the status to s"
   [stat]
-  (if (contains? status-messages stat)
-    (reset! status stat)))
+  (let [msg-fn (stat status-messages)]
+    (string/upper-case (msg-fn stat))))
 
 (defn- status-style
   "Get the corresponding status style"
-  []
-  (let [stat @status]
-    (hash-map :color (stat colors))))
-
-(defn status?
-  "Get the status"
-  []
-  (let [stat @status]
-    stat))
+  [stat]
+  (hash-map :color (stat colors)))
 
 ;; --------------------------------
 ;; Components
 
 (defn status-msg
   "The status message component"
-  []
-  [:div.scoreboard.status {:style (status-style)}
-    [:p (get-status)]])
+  [stat]
+  [:div.scoreboard.status {:style (status-style stat)}
+    [:p (get-status stat)]])

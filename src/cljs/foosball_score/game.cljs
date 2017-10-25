@@ -2,76 +2,54 @@
   "Defines the game scoring mechanics and the scoreboard behavior"
   {:author "Ian McIntyre"}
   
-  (:require 
-    [reagent.core :as reagent :refer [atom]]
+  (:require
     [clojure.string :as string]
-    [foosball-score.util :refer [teams colors]]))
-
-;; --------------------------------
-;; Atoms and constants
-
-(defonce scores
-  (atom (zipmap teams (cycle [0]))))
-
-(defonce score-times
-  (atom '[]))
-
-(defonce max-score 5)
+    [foosball-score.clock :refer [game-time-str]]
+    [foosball-score.util :refer [teams colors]]
+    [foosball-score.state :refer [game-over? who-is-winning]]))
 
 ;; --------------------------------
 ;; Functions
-(defn new-game
-  "Start a new game"
-  []
-  (reset! scores
-    (zipmap teams (cycle [0])))
-  (reset! score-times []))
 
-(defn game-over?
-  "Returns true if the game is over, else false"
-  []
-  (let [ss @scores]
-    (boolean (some #(>= % max-score) (vals ss)))))
-
-(defn point-for
-  "Increment a point for one of the teams"
-  [team time]
-  (if (and (some #(= team %) teams) (not (game-over?)))  
-    (do 
-      (swap! scores update-in [team] inc)
-      (swap! score-times conj {:team team :time time}))))
+(defn state-depends
+  "Describes the filtering of the state specific for this component"
+  [state]
+  (select-keys state [:scores :game-mode :score-times]))
 
 (defn- scorecard-class
   "Change the scorecards class"
-  [score]
-  (if (>= score max-score)
+  [state team]
+  (if (and (game-over? state)
+           (= team (who-is-winning state)))
     "blink"))
+
 ;; --------------------------------
 ;; Components
 
 (defn score-time-list
   "Show the time of each score"
-  []
+  [score-times]
   [:div.scorelist
-    (for [item @score-times] ^{:key item}
-      (let [time (item :time)
+    (for [item score-times] ^{:key item}
+      (let [time (game-time-str (item :time))
             team (item :team)
             color (team colors)]
         [:div {:style {:color color}} time]))])
 
 (defn scoreboard-content
   "A team's scoreboard content"
-  [team align]
-  (let [ss @scores
-        color (team colors)]
-    [:div.scorecard {:class (scorecard-class (team ss))}
-      [:h6 {:style {:color color :text-align align}} (string/upper-case (name team))]
-      [:h1 {:style {:color color :text-align align}} (team ss)]]))
+  [state team align]
+  (let [color (team colors)
+        scores (:scores state)]
+    [:div.scorecard {:class (scorecard-class state team)}
+      [:h6 {:style {:color color :text-align align}}
+           (string/upper-case (name team))]
+      [:h1 {:style {:color color :text-align align}} (team scores)]]))
 
 (defn scoreboard
   "Create the game's scoreboard"
-  [left right]
+  [state left right]
   [:div.scoreboard
-    [scoreboard-content left :right]
-    [score-time-list]
-    [scoreboard-content right :left]])
+    [scoreboard-content state left :right]
+    [score-time-list (:score-times state)]
+    [scoreboard-content state right :left]])

@@ -1,88 +1,47 @@
 (ns foosball-score.players
   "Foosball player display"
   (:require
-    [reagent.core :as reagent :refer [atom]]
-    [foosball-score.util :refer [teams colors]]))
-
-;;;;;;;;;;
-;; Avatars
-;;;;;;;;;;
-
-;; Avatar icon names will follow the convention
-;;    avatar-face-icon-#.png
-;; where # is a number starting at 1 and a sequential increment from
-;; the previous avatar icon name. When you add a new avatar, increment
-;; number-of-avatars appropriately.
-(def all-avatar-imgs
-  (let [number-of-avatars 4]  ;; Change me if there are more avatars
-    (take number-of-avatars
-      (map #(str "/img/avatar-face-icon-" % ".png")
-        (iterate inc 1)))))
-
-(defonce avatars
-  (atom (shuffle all-avatar-imgs)))
-
-(defn- reset-avatars!
-  "Reset the available avatars randomly, and store them in the atom."
-  []
-  (reset! avatars (shuffle all-avatar-imgs)))
-
-(defn- pop-random-avatar!
-  "Returns the next available avatar, or nil if they're all gone"
-  []
-  (let [avatar (first @avatars)]
-    (swap! avatars rest)
-    avatar))
+    [foosball-score.util :refer [teams colors]]
+    [foosball-score.state :refer [swap-players]]
+    [goog.string :as gstring]))
 
 ;;;;;;;;;;;;;;;
 ;; Players n'at
 ;;;;;;;;;;;;;;;
 
-(defonce players (atom []))
-(defonce max-players 4)
+(defn state-depends
+  "State filtering for player components"
+  [state]
+  (select-keys state [:next-player :teams]))
 
-(defn- append-player
-  "Append player to players if there are fewer than max-players"
-  [players player]
-    (if (< (count players) max-players)
-      (conj players player)
-      players))
+(defn- position-icon
+  "Returns a font awesome icon based on the player's tactical position"
+  [pos color]
+  (let [icon (if (= pos :defense) "fa fa-shield" "fa fa-bolt")]
+    [:i {:class icon}]))
 
-(defn- next-team
-  "Get the team that will receive the next player.
-  Players are first assigned to black, then to gold, then black, then gold."
-  []
-  (if (even? (count @players))
-    :black
-    :gold))
+(defn- player
+  "Component that shows the player position icon and name"
+  [team position next-player players]
+  (let [display (if (position players) (position players) "???")
+        outline (if (= next-player [team position]) "dotted" nil)]
+  [:div {:style {:outline outline :margin 5}}
+    [:div {:style {:padding 5}}
+      [position-icon position (team colors)]
+      (gstring/unescapeEntities " &middot; ") display]]))
 
-(defn add-player!
-  "Add a player"
-  [player]
-  (let [team    (next-team)
-        avatar  (pop-random-avatar!)]
-    (swap! players append-player {:player player :team team
-                                  :avatar avatar})))
+(defn- team-player-list
+  "The one to two players on a team"
+  [{:keys [teams next-player] :as state} team swapper]
+  (let [[offense defense] [(-> teams team :offense) (-> teams team :defense)]]
+    [:div.player {:style {:color (team colors)}}
+      [player team :offense next-player (team teams)]
+      [:i {:class "fa fa-refresh" :on-click swapper}]
+      [player team :defense next-player (team teams)]]))
 
-(defn reset-players!
-  "Reset the player list"
-  []
-  (do
-    (reset! players [])
-    (reset-avatars!)))
-
-(defn- player-color
-  [{:keys [team]}]
-  (team colors))
-
-;; Components
 (defn player-list
-  "The player list component"
-  []
+  "The two to four players in the game"
+  [state swapper]
   [:div.playerlist
-    (let [sorted-players (sort-by (comp name :team) @players)]
-      (for [player sorted-players] ^{:key player}
-        [:div.player 
-          [:div {:style {:color (player-color player) }} (player :player)]
-          [:img.avatar {:src (player :avatar)}]
-        ]))])
+    [team-player-list state :black (partial swapper :black)]
+    [team-player-list state :gold (partial swapper :gold)]])
