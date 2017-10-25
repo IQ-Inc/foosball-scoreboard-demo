@@ -3,7 +3,8 @@
   (:require
     [reagent.core :as reagent :refer [atom]]
     [foosball-score.util :refer [teams colors]]
-    [foosball-score.state :refer [swap-players]]))
+    [foosball-score.state :refer [swap-players]]
+    [goog.string :as gstring]))
 
 ;;;;;;;;;;;;;;;
 ;; Players n'at
@@ -17,18 +18,18 @@
 
 (defn- player
   [team position players]
-    [:div
-      [:div [position-icon position (team colors)] (position players)]])
+  (let [display (if (position players) (position players) "???")]
+  [:div
+    [:div [position-icon position (team colors)] (gstring/unescapeEntities " &middot; ") display]]))
 
 (defn- team-player-list
   "The player list component"
   [team players swapper]
   (let [[offense defense] [(:offense players) (:defense players)]]
     [:div.player {:style {:color (team colors)}}
-      (if (not (nil? offense)) [player team :offense players])
-      (if (and (not (nil? offense)) (not (nil? defense)))
-        [:i {:class "fa fa-refresh" :on-click swapper}])
-      (if (not (nil? defense)) [player team :defense players])]))
+      [player team :offense players]
+      [:i {:class "fa fa-refresh" :on-click swapper}]
+      [player team :defense players]]))
 
 (defn player-list
   [{:keys [teams] :as state} notify]
