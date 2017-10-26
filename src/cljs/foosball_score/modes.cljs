@@ -22,6 +22,6 @@
 
 (defn game-modes
   [{:keys [game-mode] {:keys [max-score]} :scores}]
-  [:div
+  [:div.game-modes
     [max-score-display max-score]
     [game-mode-display game-mode max-score]])

@@ -23,6 +23,21 @@
   justify-content: center;
 }
 
+.game-modes {
+  background: #dddddd;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 5px;
+  color: #ffffff;
+}
+
+.game-modes:nth-child() {
+  color: red;
+}
+
 p, h1, h2, h3, h4, h5, h6 {
   margin: 0 0 0 0;
   padding: 0 0 0 0;
