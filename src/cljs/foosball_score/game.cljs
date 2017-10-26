@@ -26,14 +26,18 @@
 ;; Components
 
 (defn score-time-list
-  "Show the time of each score"
-  [score-times]
-  [:div.scorelist
-    (for [item score-times] ^{:key item}
-      (let [time (game-time-str (item :time))
-            team (item :team)
-            color (team colors)]
-        [:div {:style {:color color}} time]))])
+  "Show the time of the most recent 9 scores"
+  [all-score-times]
+  (let [total (count all-score-times)
+        score-times (if (> total 9)
+                        (drop (- total 9) all-score-times)
+                        all-score-times)]
+    [:div.scorelist
+      (for [item score-times] ^{:key item}
+        (let [time (game-time-str (item :time))
+              team (item :team)
+              color (team colors)]
+          [:div {:style {:color color}} time]))]))
 
 (defn scoreboard-content
   "A team's scoreboard content"
