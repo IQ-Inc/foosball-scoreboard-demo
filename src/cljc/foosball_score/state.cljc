@@ -33,23 +33,6 @@
            :gold  {:offense nil :defense nil}}
    :next-player [:black :offense]})
 
-(defn next-player-transition
-  "Returns the next player state"
-  [next-player]
-  (let [transitions [[:black :offense]
-                     [:gold  :offense]
-                     [:black :defense]
-                     [:gold  :defense]]]
-    ;; Guard for invaid inputs
-    (if (some #{next-player} transitions)
-      (->> (cycle transitions)
-           (drop-while #(not (= % next-player)))
-           next
-           first)
-      ;; Otherwise, return the first possible transition
-      ;; so we can get back into sync
-      (first transitions))))
-
 ;;;;;;;;;;;;;
 ;; Time state
 ;;;;;;;;;;;;;
@@ -61,10 +44,10 @@
 ;; New state
 ;;;;;;;;;;;;
 (def new-state
-  (reduce merge {} [new-game-state
-                    new-team-state
-                    new-score-state
-                    new-time-state]))
+  (merge {} new-game-state
+            new-team-state
+            new-score-state
+            new-time-state))
 
 ;; Application state
 ;; components are defined below.
@@ -74,6 +57,31 @@
   "Replaces the current state with new-state"
   [new-state]
   (reset! state new-state))
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Cyclic transitions
+;;;;;;;;;;;;;;;;;;;;;
+
+(defn- next-transition
+  "Describes cyclic transitions across a set of possible values"
+  [transitions current]
+  (if (some #{current} transitions)
+      (->> (cycle transitions)
+           (drop-while #(not (= % current)))
+           next
+           first)
+      ;; Otherwise, return the first possible transition
+      ;; so we can get back into sync
+      (first transitions)))
+
+(def next-player-transition
+  (partial next-transition [[:black :offense]
+                            [:gold  :offense]
+                            [:black :defense]
+                            [:gold  :defense]]))
+
+(def next-game-mode-transition
+  (partial next-transition [:first-to-max :win-by-two]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State consumers
@@ -100,6 +108,7 @@
   "Based on the provided state, returns true if the game is
   over, else false."
   [{:keys [game-mode scores] :as state}]
+  {:pre [(some #{game-mode} [:first-to-max :win-by-two])]}
   (case game-mode
     :first-to-max (or (>= (:gold scores) (:max-score scores))
                       (>= (:black scores) (:max-score scores)))
