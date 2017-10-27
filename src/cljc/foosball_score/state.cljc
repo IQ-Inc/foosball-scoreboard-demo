@@ -104,20 +104,23 @@
       (> d 0) :black
       (= d 0) nil)))
 
-(defn game-over?
+(defmulti game-over?
   "Based on the provided state, returns true if the game is
-  over, else false."
-  [{:keys [game-mode scores] :as state}]
-  {:pre [(some #{game-mode} [:first-to-max :win-by-two])]}
-  (case game-mode
-    :first-to-max (or (>= (:gold scores) (:max-score scores))
-                      (>= (:black scores) (:max-score scores)))
-    :win-by-two (let [g (:gold scores)
-                      b (:black scores)
-                      d (- (max b g) (min b g))]
-                  (and (>= d 2)
-                       (game-over? (assoc state :game-mode :first-to-max))))
-    true)) ;; Default, game is over for invalid modes
+  over else false"
+  :game-mode)
+
+(defmethod game-over? :first-to-max
+  [{:keys [scores]}]
+  (or (>= (:gold scores) (:max-score scores))
+      (>= (:black scores) (:max-score scores))))
+
+(defmethod game-over? :win-by-two
+  [{:keys [scores] :as state}]
+  (let [gold (:gold scores)
+        black (:black scores)
+        difference (- (max black gold) (min black gold))]
+    (and (>= difference 2)
+         (game-over? (assoc state :game-mode :first-to-max)))))
 
 (defn point-for
   "Returns a state with a point added for team, or the current state if
