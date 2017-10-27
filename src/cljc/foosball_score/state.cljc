@@ -140,7 +140,7 @@
 (defn change-status
   "Change the status of the state if the status is valid"
   [state status]
-  {:pre [(some #{status} [:waiting :playing :black :gold :game-over])]}
+  {:pre [(some #{status} [:waiting :playing :black :gold])]}
   (assoc state :status status))
 
 (defn add-player
@@ -180,13 +180,9 @@
   [{:keys [status] :as state} team]
   (if (= status :playing)
     (let [state (point-for state team)]
-      (if (game-over? state)
-        (-> state 
-            (change-status :game-over)
-            (update-score-times (who-is-winning state)))
-        (-> state
-            (change-status team)
-            (update-score-times team))))))
+      (-> state
+          (change-status team)
+          (update-score-times team)))))
 
 ;; Black goal
 (defmethod event->state :black

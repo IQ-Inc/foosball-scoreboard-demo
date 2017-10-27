@@ -87,9 +87,9 @@
   [:div {:tab-index "1" :style {:outline "none"}
         :on-key-press (fn [c] (keypress-handler state (js/String.fromCharCode (.-charCode c))))}
    [modes/game-modes state]
-   [clock/game-clock (clock/state-depends state) (partial notify-server state/new-state)]
+   [clock/game-clock state (partial notify-server state/new-state)]
    [game/scoreboard (game/state-depends state) :black :gold]
-   [status/status-msg (:status state)]
+   [status/status-msg state]
    [players/player-list (players/state-depends state) (swap-team state)]])
 
 ;; -------------------------

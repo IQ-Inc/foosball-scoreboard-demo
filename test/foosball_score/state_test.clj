@@ -157,7 +157,7 @@
       (is (= expected (state/event->state input :tick)))))
 
   (testing "Time does not increment for any other status"
-    (doseq [status [:waiting :drop :black :gold :game-over]]
+    (doseq [status [:waiting :drop :black :gold]]
       (let [input (assoc state/new-state :status status)]
         (is (nil? (state/event->state input :tick))))))
 
@@ -169,7 +169,7 @@
                          (assoc :time 42))
             expected (-> input
                          (update-in [:scores team] inc)
-                         (assoc :status :game-over)
+                         (assoc :status team)
                          (update :score-times conj {:time 42 :team team}))]
         (is (= expected (state/event->state input team))))))
 
