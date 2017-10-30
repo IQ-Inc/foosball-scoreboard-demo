@@ -176,3 +176,16 @@
   (testing "Game over state has no update"
     (is (nil? (state/event->state
                 (assoc-in state/new-state [:scores :black] 5) :drop)))))
+
+(deftest new-game-test
+  (testing "Resets everything but max-score and game-mode"
+    (let [input (-> state/new-state
+                    (assoc-in [:scores :black] 4)
+                    (assoc-in [:scores :gold] 3)
+                    (assoc :game-mode :win-by-two)
+                    (assoc-in [:scores :max-score] 2)
+                    (assoc :time 999))
+          expected (-> state/new-state
+                       (assoc :game-mode :win-by-two)
+                       (assoc-in [:scores :max-score] 2))]
+      (is (= expected (state/new-game input))))))

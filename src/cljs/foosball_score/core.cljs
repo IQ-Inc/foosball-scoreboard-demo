@@ -78,7 +78,7 @@
 
 (defmethod keypress-handler :default
   [state chr]
-  (notify-server state/new-state))
+  (notify-server (state/new-game state)))
 
 ;; -------------------------
 ;; Views
@@ -87,7 +87,7 @@
   [:div {:tab-index "1" :style {:outline "none"}
         :on-key-press (fn [c] (keypress-handler state (js/String.fromCharCode (.-charCode c))))}
    [modes/game-modes state]
-   [clock/game-clock state (partial notify-server state/new-state)]
+   [clock/game-clock state (partial notify-server (state/new-game state))]
    [game/scoreboard (game/state-depends state) :black :gold]
    [status/status-msg state]
    [players/player-list (players/state-depends state) (swap-team state)]])

@@ -43,11 +43,21 @@
 ;;;;;;;;;;;;
 ;; New state
 ;;;;;;;;;;;;
+
 (def new-state
   (merge {} new-game-state
             new-team-state
             new-score-state
             new-time-state))
+            
+(defn new-game
+  "Returns a new game state based on the current state"
+  [state]
+  (let [max-score (get-in state [:scores :max-score])
+        game-mode (get state :game-mode)]
+    (-> new-state
+        (assoc :game-mode game-mode)
+        (assoc-in [:scores :max-score] max-score))))
 
 ;; Application state
 ;; components are defined below.
