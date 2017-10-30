@@ -43,11 +43,21 @@
 ;;;;;;;;;;;;
 ;; New state
 ;;;;;;;;;;;;
+
 (def new-state
   (merge {} new-game-state
             new-team-state
             new-score-state
             new-time-state))
+            
+(defn new-game
+  "Returns a new game state based on the current state"
+  [state]
+  (let [max-score (get-in state [:scores :max-score])
+        game-mode (get state :game-mode)]
+    (-> new-state
+        (assoc :game-mode game-mode)
+        (assoc-in [:scores :max-score] max-score))))
 
 ;; Application state
 ;; components are defined below.
@@ -104,20 +114,23 @@
       (> d 0) :black
       (= d 0) nil)))
 
-(defn game-over?
+(defmulti game-over?
   "Based on the provided state, returns true if the game is
-  over, else false."
-  [{:keys [game-mode scores] :as state}]
-  {:pre [(some #{game-mode} [:first-to-max :win-by-two])]}
-  (case game-mode
-    :first-to-max (or (>= (:gold scores) (:max-score scores))
-                      (>= (:black scores) (:max-score scores)))
-    :win-by-two (let [g (:gold scores)
-                      b (:black scores)
-                      d (- (max b g) (min b g))]
-                  (and (>= d 2)
-                       (game-over? (assoc state :game-mode :first-to-max))))
-    true)) ;; Default, game is over for invalid modes
+  over else false"
+  :game-mode)
+
+(defmethod game-over? :first-to-max
+  [{:keys [scores]}]
+  (or (>= (:gold scores) (:max-score scores))
+      (>= (:black scores) (:max-score scores))))
+
+(defmethod game-over? :win-by-two
+  [{:keys [scores] :as state}]
+  (let [gold (:gold scores)
+        black (:black scores)
+        difference (- (max black gold) (min black gold))]
+    (and (>= difference 2)
+         (game-over? (assoc state :game-mode :first-to-max)))))
 
 (defn point-for
   "Returns a state with a point added for team, or the current state if
@@ -137,7 +150,7 @@
 (defn change-status
   "Change the status of the state if the status is valid"
   [state status]
-  {:pre [(some #{status} [:waiting :playing :black :gold :game-over])]}
+  {:pre [(some #{status} [:waiting :playing :black :gold])]}
   (assoc state :status status))
 
 (defn add-player
@@ -177,13 +190,9 @@
   [{:keys [status] :as state} team]
   (if (= status :playing)
     (let [state (point-for state team)]
-      (if (game-over? state)
-        (-> state 
-            (change-status :game-over)
-            (update-score-times (who-is-winning state)))
-        (-> state
-            (change-status team)
-            (update-score-times team))))))
+      (-> state
+          (change-status team)
+          (update-score-times team)))))
 
 ;; Black goal
 (defmethod event->state :black

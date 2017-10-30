@@ -2,6 +2,7 @@
   "Defines the state and actions for the game clock"
   {:author "Ian McIntyre"}
   (:require
+    [foosball-score.state :refer [game-over?]]
     [goog.string :as gstring]
     [goog.string.format]))
 
@@ -9,10 +10,6 @@
 
 ;; --------------------------------
 ;; Functions
-
-(defn state-depends
-  [state]
-  (select-keys state [:time :status]))
 
 (defn game-time-str
   "Show the game time as minutes and seconds (example: 72:55)"
@@ -26,8 +23,10 @@
 
 (defn- game-clock-class
   "Apply a class to the game clock"
-  [status time]
-  (if (and (some #{status} [:black :gold :game-over]) (> time 0))
+  [{:keys [status time] :as state}]
+  (if (or (game-over? state)
+          (and (some #{status} [:black :gold])
+               (> time 0)))
     "blink"))
 
 ;; --------------------------------
@@ -35,7 +34,7 @@
 (defn game-clock
   "The game clock"
   [{:keys [status time] :as state} new-game-callback]
-  [:div.gameclock.scoreboard {:class (game-clock-class status time)
+  [:div.gameclock.scoreboard {:class (game-clock-class state)
                               :on-click new-game-callback}
     [:h2 (game-time-str time)]])
   

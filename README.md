@@ -28,6 +28,16 @@ device baud rate. The program starts a webserver and app accessible at
 `localhost:3000`. The server monitors the serial connection for foosball events,
 and updates will be pushed to all connected clients.
 
+## Keyboard controls
+
+| Key                   |    Event                       |
+| --------------------- | ------------------------------ |
+|  `SPACE`              | Start a new game               |
+|  `b`                  | Swap black team                |
+|  `g`                  | Swap gold team                 |
+|  `m`                  | Toggle game modes              |
+|  `j/k`                | Decrease/increase max score    |
+
 ## Serial events
 
 The server will handle any serial message that is suffixed with a newline (char
