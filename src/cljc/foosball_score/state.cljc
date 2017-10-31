@@ -49,15 +49,25 @@
             new-team-state
             new-score-state
             new-time-state))
-            
-(defn new-game
+
+(defmulti new-game
   "Returns a new game state based on the current state"
+  :game-mode)
+
+(defmethod new-game :default
   [state]
   (let [max-score (get-in state [:scores :max-score])
         game-mode (get state :game-mode)]
     (-> new-state
         (assoc :game-mode game-mode)
         (assoc-in [:scores :max-score] max-score))))
+
+(defmethod new-game :timed
+  [state]
+  (let [state (new-game (assoc state :game-mode :first-to-max))]
+    (-> state
+        (assoc :game-mode :timed)
+        (assoc :time 60))))
 
 ;; Application state
 ;; components are defined below.
@@ -91,7 +101,7 @@
                             [:gold  :defense]]))
 
 (def next-game-mode-transition
-  (partial next-transition [:first-to-max :win-by-two]))
+  (partial next-transition [:first-to-max :win-by-two :timed]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State consumers
@@ -132,6 +142,10 @@
     (and (>= difference 2)
          (game-over? (assoc state :game-mode :first-to-max)))))
 
+(defmethod game-over? :timed
+  [{:keys [time]}]
+  (<= time 0))
+
 (defn point-for
   "Returns a state with a point added for team, or the current state if
   it is inappropriate to update the team's score"
@@ -156,9 +170,10 @@
 (defn add-player
   "Adds a player to a team, and defines the next player assignment"
   [{:keys [next-player] :as state} player]
-  (let [next-next-player (next-player-transition next-player)
-        next-state (assoc state :next-player next-next-player)]
-    (assoc-in next-state (cons :teams next-player) player)))
+  (let [next-next-player (next-player-transition next-player)]
+    (-> state
+        (assoc :next-player next-next-player)
+        (assoc-in (cons :teams next-player) player))))
 
 (defn- update-score-times
   [{:keys [status time] :as state} team]
@@ -177,8 +192,9 @@
 
 ;; Clock ticks
 (defmethod event->state :tick
-  [{:keys [status] :as state} _]
-  (if (= status :playing) (update state :time inc)))
+  [{:keys [status game-mode] :as state} _]
+  (when (= status :playing)
+    (update state :time (if (= game-mode :timed) dec inc))))
 
 ;; Drop ball
 (defmethod event->state :drop
