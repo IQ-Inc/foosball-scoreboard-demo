@@ -13,7 +13,7 @@
 (defn state-depends
   "Describes the filtering of the state specific for this component"
   [state]
-  (select-keys state [:scores :game-mode :score-times]))
+  (select-keys state [:scores :game-mode :score-times :time]))
 
 (defn- scorecard-class
   "Change the scorecards class"

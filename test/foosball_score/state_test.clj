@@ -5,7 +5,8 @@
 
 (deftest point-for-test
   (let [data {:scores {:black 0 :gold 0 :max-score 5}
-              :game-mode :first-to-max}]
+              :game-mode :first-to-max
+              :time 0}]
     
     (testing "Increments score by one"
       (let [expected (assoc-in data [:scores :black] 1)]
@@ -16,7 +17,17 @@
     (testing "Score does not exceed max-score"
       (let [expected (assoc-in data [:scores :black] 5)
             actual (nth (iterate #(state/point-for % :black) data) 100)]
-        (is (= actual expected))))))
+        (is (= actual expected))))
+
+    (testing "Score may exceed max-score for non-zero time"
+      (let [input (-> data (assoc :game-mode :timed) (update :time inc))
+            expected (assoc-in input [:scores :black] 100)
+            actual (nth (iterate #(state/point-for % :black) input) 100)]
+        (is (= actual expected))))
+
+    (testing "Score does not increment for zero time in timed mode"
+      (let [input (assoc data :game-mode :timed)]
+        (is (= input (state/point-for input :black)))))))
 
 (deftest who-is-winning-test
   (testing "Black is winning"
@@ -73,6 +84,18 @@
         (is (not (state/game-over? data))))
       (let [data (merge data {:scores {:black 8 :gold 9 :max-score 5}})]
         (is (not (state/game-over? data)))))))
+
+(deftest timed-game-test
+  (let [data {:scores {:black 0 :gold 0 :max-score 2}
+              :game-mode :timed
+              :time 60}]
+
+    (testing "Game is not over for non-zero time"
+      (is (not (state/game-over? data))))
+
+    (testing "Game is over when time is zero"
+      (let [input (assoc data :time 0)]
+        (is (state/game-over? input))))))
 
 (deftest swap-players-test
   (let [data {:teams
@@ -175,7 +198,16 @@
 
   (testing "Game over state has no update"
     (is (nil? (state/event->state
-                (assoc-in state/new-state [:scores :black] 5) :drop)))))
+                (assoc-in state/new-state [:scores :black] 5) :drop))))
+
+  (testing "Time decrements when in a timed game"
+    (let [input (-> state/new-state
+                    (assoc :game-mode :timed)
+                    (assoc :time 60)
+                    (state/change-status :playing))
+          expected (-> input
+                       (update :time dec))]
+      (is (= expected (state/event->state input :tick))))))
 
 (deftest new-game-test
   (testing "Resets everything but max-score and game-mode"
@@ -188,4 +220,17 @@
           expected (-> state/new-state
                        (assoc :game-mode :win-by-two)
                        (assoc-in [:scores :max-score] 2))]
+      (is (= expected (state/new-game input)))))
+
+  (testing "Resets time to 1 min when in timed mode"
+    (let [input (-> state/new-state
+                    (assoc-in [:scores :black] 4)
+                    (assoc-in [:scores :gold] 3)
+                    (assoc :game-mode :timed)
+                    (assoc-in [:scores :max-score] 2)
+                    (assoc :time 999))
+          expected (-> state/new-state
+                       (assoc :game-mode :timed)
+                       (assoc-in [:scores :max-score] 2)
+                       (assoc :time 60))]
       (is (= expected (state/new-game input))))))
