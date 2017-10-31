@@ -38,7 +38,8 @@
 ;;;;;;;;;;;;;
 
 (def new-time-state
-  {:time 0 :score-times []})
+  {:time 0 :score-times []
+   :end-time 120})
 
 ;;;;;;;;;;;;
 ;; New state
@@ -57,17 +58,12 @@
 (defmethod new-game :default
   [state]
   (let [max-score (get-in state [:scores :max-score])
-        game-mode (get state :game-mode)]
+        game-mode (get state :game-mode)
+        end-time  (get state :end-time)]
     (-> new-state
         (assoc :game-mode game-mode)
-        (assoc-in [:scores :max-score] max-score))))
-
-(defmethod new-game :timed
-  [state]
-  (let [state (new-game (assoc state :game-mode :first-to-max))]
-    (-> state
-        (assoc :game-mode :timed)
-        (assoc :time 60))))
+        (assoc-in [:scores :max-score] max-score)
+        (assoc :end-time end-time))))
 
 ;; Application state
 ;; components are defined below.
@@ -143,8 +139,8 @@
          (game-over? (assoc state :game-mode :first-to-max)))))
 
 (defmethod game-over? :timed
-  [{:keys [time]}]
-  (<= time 0))
+  [{:keys [time end-time]}]
+  (<= end-time time))
 
 (defn point-for
   "Returns a state with a point added for team, or the current state if
@@ -194,7 +190,7 @@
 (defmethod event->state :tick
   [{:keys [status game-mode] :as state} _]
   (when (= status :playing)
-    (update state :time (if (= game-mode :timed) dec inc))))
+    (update state :time inc)))
 
 ;; Drop ball
 (defmethod event->state :drop
