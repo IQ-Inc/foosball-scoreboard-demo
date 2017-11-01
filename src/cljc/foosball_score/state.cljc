@@ -172,8 +172,46 @@
         (assoc-in (cons :teams next-player) player))))
 
 (defn- update-score-times
+  "Adds a score time for the provided team"
   [{:keys [status time] :as state} team]
   (update state :score-times conj {:time time :team team}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Config state modifiers
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(let [limiter (fn [f minimum]
+                (fn [v]
+                  (if (> (f v) (dec minimum)) (f v) minimum)))]
+  (defn- max-score-limiter
+    "Defines flooring logic for max-score modifications"
+    [func]
+    (limiter func 1))
+  (defn- end-time-limiter
+    "Defines flooring logic for end-time modifications"
+    [func]
+    (limiter func 15)))
+
+(defn update-max-score
+  "Update the max score by up / down increments"
+  [state direction]
+  {:pre [(some #{direction} [inc dec])]}
+  (update-in state [:scores :max-score] (max-score-limiter direction)))
+
+(defn- update-end-time
+  "Updates the end time"
+  [state direction]
+  (update state :end-time (end-time-limiter direction)))
+
+(defn increment-end-time
+  "Increment the end time"
+  [state]
+  (update-end-time state (partial + 15)))
+
+(defn decrement-end-time
+  "Decrement the end time"
+  [state]
+  (update-end-time state #(- % 15)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Event -> state transitions

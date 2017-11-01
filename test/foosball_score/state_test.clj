@@ -227,3 +227,38 @@
                        (assoc-in [:scores :max-score] 2)
                        (assoc :end-time 89))]
       (is (= expected (state/new-game input))))))
+
+(deftest update-max-score-test
+  (let [data {:scores {:max-score 5}}]
+
+    (testing "Increment max-score"
+      (is (= {:scores {:max-score 6}} (state/update-max-score data inc))))
+
+    (testing "Decrement max-score"
+      (is (= {:scores {:max-score 4}} (state/update-max-score data dec))))
+
+    (testing "Rejects any other updates with an AssertionError"
+      (is (thrown? AssertionError
+                   (state/update-max-score data (partial + 99)))))
+
+    (testing "Does not decrement below 1"
+      (let [input (assoc-in data [:scores :max-score] 1)]
+        (is (= input (state/update-max-score input dec)))))
+
+    (testing "May increment indefinitely"
+      (let [actual (nth (iterate #(state/update-max-score % inc) data) 200)]
+        (is (= {:scores {:max-score 205}} actual))))))
+
+(deftest update-end-time-test
+  (testing "Increment end time by 15"
+    (is (= {:end-time 45} (state/increment-end-time {:end-time 30}))))
+
+  (testing "Decrement end time by 15"
+    (is (= {:end-time 15} (state/decrement-end-time {:end-time 30}))))
+
+  (testing "Does not decrement below 15"
+    (is (= {:end-time 15} (state/decrement-end-time {:end-time 15}))))
+
+  (testing "Increments end-time indefinitely by multiples of 15"
+    (let [actual (nth (iterate state/increment-end-time {:end-time 30}) 100)]
+      (is (= {:end-time 1530} actual)))))
