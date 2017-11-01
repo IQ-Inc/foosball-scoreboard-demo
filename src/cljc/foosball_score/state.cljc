@@ -61,8 +61,8 @@
         game-mode (get state :game-mode)
         end-time  (get state :end-time)]
     (-> new-state
-        (assoc :game-mode game-mode)
         (assoc-in [:scores :max-score] max-score)
+        (assoc :game-mode game-mode)
         (assoc :end-time end-time))))
 
 ;; Application state
