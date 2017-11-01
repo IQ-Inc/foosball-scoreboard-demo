@@ -61,7 +61,7 @@
   [:div {:tab-index "1" :style {:outline "none"}
          :on-key-press (partial on-key-press! state)}
    [modes/game-modes state]
-   [clock/game-clock state (partial notify-server (state/new-game state))]
+   [clock/game-clock state]
    [game/scoreboard (game/state-depends state) :black :gold]
    [status/status-msg state]
    [players/player-list (players/state-depends state) (swap-team! state)]])
