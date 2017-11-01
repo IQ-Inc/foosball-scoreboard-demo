@@ -10,6 +10,7 @@
    [taoensso.sente  :as sente]
    [foosball-score.game :as game]
    [foosball-score.clock :as clock]
+   [foosball-score.keypress :refer [keypress-handler]]
    [foosball-score.modes :as modes]
    [foosball-score.status :as status]
    [foosball-score.socket :as socket]
@@ -30,80 +31,40 @@
 ;; -------------------------
 ;; Functions
 
-(defmethod socket/foosball-event :default
-  [event]
-  (state/update-state! (:event event)))
-
 (defn- notify-server
   [state]
   (state/update-state! state)
   (chsk-send! [:foosball/v0 state]))
 
-(defmulti keypress-handler
-  "Defines handling of keypresses"
-  (fn [state chr] chr))
-
-(defn- swap-team
+(defn- swap-team!
   "Accepts the state, then returns a function that will swap the team players
   based on that state"
   [state]
   (fn [team] (notify-server (state/swap-players state team))))
 
-(defmethod keypress-handler \b
-  [state _]
-  ((swap-team state) :black))
+(defmethod socket/foosball-event :default
+  [event]
+  (state/update-state! (:event event)))
 
-(defmethod keypress-handler \g
-  [state _]
-  ((swap-team state) :gold))
-
-(defmulti handle-up-down
-  "Update the state in the provided direction"
-  (fn [{:keys [game-mode]} direction] game-mode))
-
-(defmethod handle-up-down :default
-  [state direction]
-  (notify-server (state/update-max-score state direction)))
-
-(defmethod handle-up-down :timed
-  [state direction]
-  (let [lookup {inc state/increment-end-time
-                dec state/decrement-end-time}
-        func (get lookup direction)]
-    (notify-server (func state))))
-
-(defmethod keypress-handler \j
-  [state _]
-  (handle-up-down state dec))
-
-(defmethod keypress-handler \k
-  [state _]
-  (handle-up-down state inc))
-
-(defmethod keypress-handler \m
-  [{:keys [game-mode] :as state} _]
-  (let [next-game-mode (state/next-game-mode-transition game-mode)]
-    (notify-server (-> state (assoc :game-mode next-game-mode)))))
-
-(defmethod keypress-handler \space
+(defn- on-key-press!
+  "Maps a character chr to a keypress handler, forwarding through the state."
   [state chr]
-  (notify-server (state/new-game state)))
-
-(defmethod keypress-handler :default
-  [_ _]
-  nil)
+  (when-let [handled (keypress-handler state
+                                      (js/String.fromCharCode
+                                        (.-charCode chr)))]
+    (notify-server handled)))
 
 ;; -------------------------
 ;; Views
 
 (defn home-page [state]
   [:div {:tab-index "1" :style {:outline "none"}
-        :on-key-press (fn [c] (keypress-handler state (js/String.fromCharCode (.-charCode c))))}
+         :on-key-press (partial on-key-press! state)}
    [modes/game-modes state]
    [clock/game-clock state (partial notify-server (state/new-game state))]
    [game/scoreboard (game/state-depends state) :black :gold]
    [status/status-msg state]
-   [players/player-list (players/state-depends state) (swap-team state)]])
+   [players/player-list (players/state-depends state) (swap-team! state)]])
 
 ;; -------------------------
 ;; Routes
