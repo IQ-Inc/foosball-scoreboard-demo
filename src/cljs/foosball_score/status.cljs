@@ -3,7 +3,7 @@
   {:author "Ian McIntyre"}
   (:require-macros [foosball-score.util :refer [const]])
   (:require
-    [foosball-score.state :refer [game-over?]]
+    [foosball-score.state :refer [game-over? who-is-winning]]
     [foosball-score.util :refer [colors]]
     [clojure.string :as string]))
 
@@ -21,13 +21,16 @@
    (str "*" team " player takes off shirt and runs a lap*")
    "your parents would be so proud of that goal"
    "gggooooooaaaaalllll"
+   "cool"
+   "wow, what a shot"
+   (str "neat shot, " team)
    (str "Team " team " is bringing chaos to this match!")])
 
 (defn- pick-team-message
   "Choose a message for the team"
   [team]
-  (let [n (name team)]
-    (rand-nth (possible-team-messages n))))
+  (let [teamname (name team)]
+    (rand-nth (possible-team-messages teamname))))
 
 (def status-messages
   (hash-map 
@@ -39,10 +42,16 @@
 ;; --------------------------------
 ;; Functions
 
+(defn- game-over-msg
+  "Generates the game over message based on a winner"
+  [winner]
+  (let [lookup {nil "TIED GAME" :black "BLACK WINS" :gold "GOLD WINS"}]
+    (str "GAME OVER: " (get lookup winner))))
+
 (defn- get-status
   "Get the current status message"
   [{:keys [status] :as state}]
-  (if (game-over? state) "GAME OVER"
+  (if (game-over? state) (game-over-msg (who-is-winning state))
     (let [msg-fn (status status-messages)]
       (string/upper-case (msg-fn status)))))
 

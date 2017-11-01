@@ -6,7 +6,8 @@
 (deftest point-for-test
   (let [data {:scores {:black 0 :gold 0 :max-score 5}
               :game-mode :first-to-max
-              :time 0}]
+              :time 0
+              :end-time 60}]
     
     (testing "Increments score by one"
       (let [expected (assoc-in data [:scores :black] 1)]
@@ -19,14 +20,14 @@
             actual (nth (iterate #(state/point-for % :black) data) 100)]
         (is (= actual expected))))
 
-    (testing "Score may exceed max-score for non-zero time"
+    (testing "Score may exceed max-score in timed game mode"
       (let [input (-> data (assoc :game-mode :timed) (update :time inc))
             expected (assoc-in input [:scores :black] 100)
             actual (nth (iterate #(state/point-for % :black) input) 100)]
         (is (= actual expected))))
 
-    (testing "Score does not increment for zero time in timed mode"
-      (let [input (assoc data :game-mode :timed)]
+    (testing "Score does not increment when time equals end-time in timed mode"
+      (let [input (-> data (assoc :game-mode :timed) (assoc :time 60))]
         (is (= input (state/point-for input :black)))))))
 
 (deftest who-is-winning-test
@@ -88,13 +89,14 @@
 (deftest timed-game-test
   (let [data {:scores {:black 0 :gold 0 :max-score 2}
               :game-mode :timed
-              :time 60}]
+              :time 60
+              :end-time 61}]
 
-    (testing "Game is not over for non-zero time"
+    (testing "Game is not over when time does not equal end-time"
       (is (not (state/game-over? data))))
 
-    (testing "Game is over when time is zero"
-      (let [input (assoc data :time 0)]
+    (testing "Game is over when time equals end-time"
+      (let [input (assoc data :time 61)]
         (is (state/game-over? input))))))
 
 (deftest swap-players-test
@@ -184,12 +186,13 @@
       (let [input (assoc state/new-state :status status)]
         (is (nil? (state/event->state input :tick))))))
 
-  (testing "Game over when team scores 5"
+  (testing "Point increments for identified team"
     (doseq [team [:black :gold]]
       (let [input    (-> state/new-state
                          (assoc :scores {:black 4 :gold 4 :max-score 5})
                          (assoc :status :playing)
-                         (assoc :time 42))
+                         (assoc :time 42)
+                         (assoc :game-mode :first-to-max))
             expected (-> input
                          (update-in [:scores team] inc)
                          (assoc :status team)
@@ -200,37 +203,62 @@
     (is (nil? (state/event->state
                 (assoc-in state/new-state [:scores :black] 5) :drop))))
 
-  (testing "Time decrements when in a timed game"
+  (testing "Time increments when in a timed game"
     (let [input (-> state/new-state
                     (assoc :game-mode :timed)
                     (assoc :time 60)
+                    (assoc :end-time 120)
                     (state/change-status :playing))
           expected (-> input
-                       (update :time dec))]
+                       (update :time inc))]
       (is (= expected (state/event->state input :tick))))))
 
 (deftest new-game-test
-  (testing "Resets everything but max-score and game-mode"
+  (testing "Resets everything but max-score, game-mode, and end-time"
     (let [input (-> state/new-state
                     (assoc-in [:scores :black] 4)
                     (assoc-in [:scores :gold] 3)
                     (assoc :game-mode :win-by-two)
                     (assoc-in [:scores :max-score] 2)
-                    (assoc :time 999))
+                    (assoc :time 999)
+                    (assoc :end-time 89))
           expected (-> state/new-state
                        (assoc :game-mode :win-by-two)
-                       (assoc-in [:scores :max-score] 2))]
-      (is (= expected (state/new-game input)))))
-
-  (testing "Resets time to 1 min when in timed mode"
-    (let [input (-> state/new-state
-                    (assoc-in [:scores :black] 4)
-                    (assoc-in [:scores :gold] 3)
-                    (assoc :game-mode :timed)
-                    (assoc-in [:scores :max-score] 2)
-                    (assoc :time 999))
-          expected (-> state/new-state
-                       (assoc :game-mode :timed)
                        (assoc-in [:scores :max-score] 2)
-                       (assoc :time 60))]
+                       (assoc :end-time 89))]
       (is (= expected (state/new-game input))))))
+
+(deftest update-max-score-test
+  (let [data {:scores {:max-score 5}}]
+
+    (testing "Increment max-score"
+      (is (= {:scores {:max-score 6}} (state/update-max-score data inc))))
+
+    (testing "Decrement max-score"
+      (is (= {:scores {:max-score 4}} (state/update-max-score data dec))))
+
+    (testing "Rejects any other updates with an AssertionError"
+      (is (thrown? AssertionError
+                   (state/update-max-score data (partial + 99)))))
+
+    (testing "Does not decrement below 1"
+      (let [input (assoc-in data [:scores :max-score] 1)]
+        (is (= input (state/update-max-score input dec)))))
+
+    (testing "May increment indefinitely"
+      (let [actual (nth (iterate #(state/update-max-score % inc) data) 200)]
+        (is (= {:scores {:max-score 205}} actual))))))
+
+(deftest update-end-time-test
+  (testing "Increment end time by 15"
+    (is (= {:end-time 45} (state/increment-end-time {:end-time 30}))))
+
+  (testing "Decrement end time by 15"
+    (is (= {:end-time 15} (state/decrement-end-time {:end-time 30}))))
+
+  (testing "Does not decrement below 15"
+    (is (= {:end-time 15} (state/decrement-end-time {:end-time 15}))))
+
+  (testing "Increments end-time indefinitely by multiples of 15"
+    (let [actual (nth (iterate state/increment-end-time {:end-time 30}) 100)]
+      (is (= {:end-time 1530} actual)))))

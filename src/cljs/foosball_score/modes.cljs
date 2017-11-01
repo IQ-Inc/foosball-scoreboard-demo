@@ -14,15 +14,15 @@
 ;;;;;;;;;;;;;
 
 (defmulti left-mode-display
-  (fn [game-mode max-score time] game-mode))
+  (fn [game-mode max-score end-time] game-mode))
 
 (defmethod left-mode-display :default
   [_ max-score _]
   [:div (str "Max score: " max-score)])
 
 (defmethod left-mode-display :timed
-  [_ _ time]
-  [:div (str "Time: " (game-time-str time))])
+  [_ _ end-time]
+  [:div (str "End time: " (game-time-str end-time))])
 
 (defn- right-mode-display
   "Show the game mode"
@@ -30,7 +30,7 @@
   [:div ((mode->str game-mode) max-score)])
 
 (defn game-modes
-  [{:keys [game-mode time] {:keys [max-score]} :scores}]
+  [{:keys [game-mode end-time] {:keys [max-score]} :scores}]
   [:div.game-modes
-    [left-mode-display game-mode max-score time]
+    [left-mode-display game-mode max-score end-time]
     [right-mode-display game-mode max-score]])

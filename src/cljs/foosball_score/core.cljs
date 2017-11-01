@@ -57,37 +57,20 @@
   [state _]
   ((swap-team state) :gold))
 
-(defn zero-limited-func
-  [func minimum]
-  (fn [n]
-    (if (> (func n) 0) (func n) minimum)))
-
 (defmulti handle-up-down
   "Update the state in the provided direction"
   (fn [{:keys [game-mode]} direction] game-mode))
 
 (defmethod handle-up-down :default
   [state direction]
-  (let [checked-direction (zero-limited-func direction 1)]
-    (notify-server (update-in state [:scores :max-score] checked-direction))))
+  (notify-server (state/update-max-score state direction)))
 
 (defmethod handle-up-down :timed
-  [{:keys [time] :as state} direction]
-  (let [func (fn [n] (nth (iterate direction n) 15))
-        checked-direction (zero-limited-func func 15)]
-    (notify-server (update state :time checked-direction))))
-
-(defmulti handle-mode-change
-  "Account for state changes on mode transitions given the next game mode"
-  (fn [state next-game-mode] next-game-mode))
-
-(defmethod handle-mode-change :timed
-  [{:keys [time] :as state} _]
-  (if (< time 60) (assoc state :time 60) state))
-
-(defmethod handle-mode-change :default
-  [state _]
-  (assoc state :time 0))
+  [state direction]
+  (let [lookup {inc state/increment-end-time
+                dec state/decrement-end-time}
+        func (get lookup direction)]
+    (notify-server (func state))))
 
 (defmethod keypress-handler \j
   [state _]
@@ -100,12 +83,15 @@
 (defmethod keypress-handler \m
   [{:keys [game-mode] :as state} _]
   (let [next-game-mode (state/next-game-mode-transition game-mode)]
-    (notify-server (-> state (handle-mode-change next-game-mode)
-                             (assoc :game-mode next-game-mode)))))
+    (notify-server (-> state (assoc :game-mode next-game-mode)))))
 
-(defmethod keypress-handler :default
+(defmethod keypress-handler \space
   [state chr]
   (notify-server (state/new-game state)))
+
+(defmethod keypress-handler :default
+  [_ _]
+  nil)
 
 ;; -------------------------
 ;; Views
