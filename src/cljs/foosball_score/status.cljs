@@ -3,7 +3,7 @@
   {:author "Ian McIntyre"}
   (:require-macros [foosball-score.util :refer [const]])
   (:require
-    [foosball-score.state :refer [game-over? who-is-winning]]
+    [foosball-score.state :as state]
     [foosball-score.util :refer [colors]]
     [clojure.string :as string]))
 
@@ -51,14 +51,16 @@
 (defn- get-status
   "Get the current status message"
   [{:keys [status] :as state}]
-  (if (game-over? state) (game-over-msg (who-is-winning state))
+  (if (state/game-over? state) (game-over-msg (state/who-is-winning state))
     (let [msg-fn (status status-messages)]
       (string/upper-case (msg-fn status)))))
 
 (defn- status-style
   "Get the corresponding status style"
-  [stat]
-  (hash-map :color (stat colors)))
+  [{:keys [status] :as state}]
+  (if (state/game-over? state)
+    (hash-map :color (get colors (state/who-is-winning state)))
+    (hash-map :color (status colors))))
 
 ;; --------------------------------
 ;; Components
@@ -66,5 +68,5 @@
 (defn status-msg
   "The status message component"
   [{:keys [status] :as state}]
-  [:div.scoreboard.status {:style (status-style status)}
+  [:div.scoreboard.status {:style (status-style state)}
     [:p (get-status state)]])
