@@ -55,10 +55,25 @@
     (notify-server handled)))
 
 ;; -------------------------
-;; Views
+;; Main UI manipulation
+(defonce flash (atom false))
+(defonce flasher-update (js/setInterval #(swap! flash not) 250))
 
+(defn- flash-effect
+  "Produce the border flash effect by returning an outline definition"
+  [{:keys [status time end-time game-mode] :as state} flash?]
+  (if (and flash?
+           (not (state/game-over? state))
+           (<= (- end-time time) 10)
+           (= status :playing)
+           (= game-mode :timed))
+    "45px solid red"
+    "none"))
+
+;; -------------------------
+;; Views
 (defn home-page [state]
-  [:div {:tab-index "1" :style {:outline "none"}
+  [:div {:tab-index "1" :style {:outline (flash-effect state @flash)}
          :on-key-press (partial on-key-press! state)}
    [modes/game-modes state]
    [clock/game-clock state]
