@@ -1,7 +1,8 @@
 (ns foosball-score.players
   "Foosball team and player display"
   (:require
-    [foosball-score.util :refer [teams colors]]
+    [foosball-score.util :refer [teams]]
+    [foosball-score.colors :refer [colors]]
     [foosball-score.state :refer [swap-players]]
     [goog.string :as gstring]))
 

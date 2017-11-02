@@ -4,7 +4,8 @@
   (:require
     [clojure.string :as string]
     [foosball-score.clock :refer [game-time-str]]
-    [foosball-score.util :refer [teams colors]]
+    [foosball-score.util :refer [teams]]
+    [foosball-score.colors :refer [colors]]
     [foosball-score.state :refer [game-over? who-is-winning]]))
 
 ;; --------------------------------

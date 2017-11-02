@@ -4,7 +4,7 @@
   (:require-macros [foosball-score.util :refer [const]])
   (:require
     [foosball-score.state :as state]
-    [foosball-score.util :refer [colors]]
+    [foosball-score.colors :refer [colors]]
     [clojure.string :as string]))
 
 ;; --------------------------------
