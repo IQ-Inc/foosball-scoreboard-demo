@@ -29,11 +29,20 @@
                (> time 0)))
     "blink"))
 
+(defmulti time-repr :game-mode)
+(defmethod time-repr :timed
+  [{:keys [time end-time]}]
+  (- end-time time))
+
+(defmethod time-repr :default
+  [{:keys [time]}]
+  time)
+
 ;; --------------------------------
 ;; Components
 (defn game-clock
   "The game clock"
-  [{:keys [status time] :as state}]
+  [state]
   [:div.gameclock.scoreboard {:class (game-clock-class state)}
-    [:h2 (game-time-str time)]])
+    [:h2 (game-time-str (time-repr state))]])
   
