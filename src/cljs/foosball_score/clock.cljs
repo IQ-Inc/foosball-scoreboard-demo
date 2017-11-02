@@ -33,8 +33,7 @@
 ;; Components
 (defn game-clock
   "The game clock"
-  [{:keys [status time] :as state} new-game-callback]
-  [:div.gameclock.scoreboard {:class (game-clock-class state)
-                              :on-click new-game-callback}
+  [{:keys [status time] :as state}]
+  [:div.gameclock.scoreboard {:class (game-clock-class state)}
     [:h2 (game-time-str time)]])
   
