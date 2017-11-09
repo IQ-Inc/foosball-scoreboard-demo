@@ -109,7 +109,8 @@
   "Create an athlete by ID id. If the ID exists, create-athlete! does nothing."
   [id]
   (when-not (lookup-athlete id)
-    (swap! in-mem-db assoc id (make-new-athlete))))
+    (swap! in-mem-db assoc id (make-new-athlete))
+    (lookup-athlete id)))
 
 (defn delete-athlete!
   "Remove the athlete by ID id. Does nothing if the ID does not exist."
