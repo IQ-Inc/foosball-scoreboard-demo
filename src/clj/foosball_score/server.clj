@@ -8,6 +8,7 @@
     [foosball-score.state :as state]
     [foosball-score.tick :as tick]
     [foosball-score.statistics :as statistics]
+    [foosball-score.persistence :as persist]
     [config.core :refer [env]]
     [org.httpkit.server :refer [run-server]])
   (:gen-class :main true))
@@ -26,8 +27,14 @@
     (if (nil? next-state) state
       (do
         (push-event! next-state)
-        (state/update-state! next-state)
-        next-state))))
+        (state/update-state! next-state)))
+    (if-let [winners (:winners next-state)]
+      (doseq [winner winners]
+        (persist/win-for! winner)))
+    (if-let [losers (:losers next-state)]
+      (doseq [loser losers]
+        (persist/loss-for! loser)))
+    next-state))
 
 (defn every-second
   "Invoked every second to sync the time across clients"
