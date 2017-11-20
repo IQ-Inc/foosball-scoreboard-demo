@@ -19,9 +19,16 @@
 
 (deftest win-loss-stats-test
   (testing "Identifies winners and losers in separate state entities"
-    (let [input (-> test-state
-                    (assoc-in [:scores :black] 1))
-          expected (-> input
-                       (assoc :winners #{"bo" "bd"})
-                       (assoc :losers #{"go" "gd"}))]
-      (is (= (statistics/win-loss-stats input) expected)))))
+    (let [winids {:gold #{"go" "gd"} :black #{"bo" "bd"}}
+          lossids {:gold (:black winids) :black (:gold winids)}]
+      (doseq [team [:black :gold]]
+        (let [input (-> test-state
+                        (assoc-in [:scores team] 1))
+              expected (-> input
+                          (assoc :winners (team winids))
+                          (assoc :losers (team lossids))
+                          (assoc :winning-team team))]
+          (is (= (statistics/win-loss-stats input) expected))))))
+          
+  (testing "Has no win / loss identies when game is tied"
+    (is (= (statistics/win-loss-stats test-state) test-state))))

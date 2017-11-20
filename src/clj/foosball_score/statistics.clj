@@ -5,15 +5,18 @@
     [foosball-score.state :as state]
     [foosball-score.util :refer [teams]]))
 
+(def ^:private anti-team
+  (into {} [teams (vec (reverse teams))]))
+
 (defn- pronounce-winners-losers
   "Adds winners and losers keys to the state, with a vector of related user IDs"
   [state]
-  (let [losing-team (into {} [teams (vec (reverse teams))])
-        ids-of (fn [team] (set (map :id (vals (-> state :teams team)))))]
+  (let [ids-of (fn [team] (set (map :id (vals (-> state :teams team)))))]
     (if-let [winner (state/who-is-winning state)]
       (-> state
           (assoc :winners (ids-of winner))
-          (assoc :losers (ids-of (losing-team winner))))
+          (assoc :losers (ids-of (anti-team winner)))
+          (assoc :winning-team winner))
     state)))
 
 (defn win-loss-stats
