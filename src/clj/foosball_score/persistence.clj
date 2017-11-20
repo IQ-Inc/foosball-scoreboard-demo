@@ -27,8 +27,9 @@
 
 (defn- make-new-athlete
   "Make the structure for a new athlete"
-  []
+  [id]
   (hash-map
+    :id id                ;; unique ID
     :name nil             ;; athlete name is empty and "unclaimed" by default
     :stats                ;; Statistics
       (hash-map
@@ -36,18 +37,18 @@
         :losses 0)))      ;; athlete losses
 
 (defmacro with-name
-  [name]
-  `(assoc (make-new-athlete) :name ~name))
+  [name id]
+  `(assoc (make-new-athlete ~id) :name ~name))
 
 (def hard-coded-players
   (hash-map
-    ian   (with-name "IAN")
-    mikel (with-name "MIKE L")
-    mikes (with-name "MIKE S")
-    tim   (with-name "TIM")
-    ryan  (with-name "RYAN")
-    eric  (with-name "ERIC")
-    norb  (with-name "NORB")))
+    ian   (with-name "IAN" ian)
+    mikel (with-name "MIKE L" mikel)
+    mikes (with-name "MIKE S" mikes)
+    tim   (with-name "TIM" tim)
+    ryan  (with-name "RYAN" ryan)
+    eric  (with-name "ERIC" eric)
+    norb  (with-name "NORB" norb)))
 
 (defonce ^:private in-mem-db (atom hard-coded-players))
 
@@ -109,7 +110,8 @@
   "Create an athlete by ID id. If the ID exists, create-athlete! does nothing."
   [id]
   (when-not (lookup-athlete id)
-    (swap! in-mem-db assoc id (make-new-athlete))))
+    (swap! in-mem-db assoc id (make-new-athlete id))
+    (lookup-athlete id)))
 
 (defn delete-athlete!
   "Remove the athlete by ID id. Does nothing if the ID does not exist."

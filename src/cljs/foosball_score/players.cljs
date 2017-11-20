@@ -20,15 +20,20 @@
   (let [icon (if (= pos :defense) "fa fa-shield" "fa fa-bolt")]
     [:i {:class icon}]))
 
+(defn- player-display
+  "Returns a string representing the player name and w/l counts"
+  [{:keys [id name stats]}]
+  (str (if (nil? name) id name) " (" (:wins stats) "-" (:losses stats) ")"))
+
 (defn- player
   "Component that shows the player position icon and name"
   [team position next-player players]
-  (let [display (if (position players) (position players) "???")
+  (let [display-name (if (position players) (player-display (position players)) "???")
         outline (if (= next-player [team position]) "dotted" nil)]
   [:div {:style {:outline outline :margin 5}}
     [:div {:style {:padding 5}}
       [position-icon position (team colors)]
-      (gstring/unescapeEntities " &middot; ") display]]))
+      (gstring/unescapeEntities " &middot; ") display-name]]))
 
 (defn- team-player-list
   "The one to two players on a team"
