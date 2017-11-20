@@ -26,7 +26,7 @@
           lossids {:gold (:black winids) :black (:gold winids)}]
       (doseq [team [:black :gold]]
         (let [input (-> test-state
-                        (assoc-in [:scores team] 1))
+                        (update-in [:scores team] inc))
               expected (-> input
                           (assoc :winners (team winids))
                           (assoc :losers (team lossids))
@@ -36,6 +36,19 @@
                           (update-in [:teams (anti-team team) :offense :stats :losses] inc)
                           (update-in [:teams (anti-team team) :defense :stats :losses] inc))]
           (is (= (statistics/win-loss-stats input) expected))))))
+
+  (testing "Does not update stats for no player"
+    (let [input (-> test-state
+                    (assoc-in [:teams :black :offense] nil)
+                    (update-in [:scores :black] inc))
+          expected (-> input
+                       (assoc :winners #{"bd"})
+                       (assoc :losers #{"go" "gd"})
+                       (assoc :winning-team :black)
+                       (update-in [:teams :black :defense :stats :wins] inc)
+                       (update-in [:teams :gold :offense :stats :losses] inc)
+                       (update-in [:teams :gold :defense :stats :losses] inc))]
+      (is (= expected (statistics/win-loss-stats input)))))
           
   (testing "Has no win / loss stats when game is tied"
     (is (= (statistics/win-loss-stats test-state) test-state)))

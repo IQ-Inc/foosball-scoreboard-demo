@@ -7,6 +7,7 @@
     [foosball-score.events :as events]
     [foosball-score.state :as state]
     [foosball-score.tick :as tick]
+    [foosball-score.statistics :as statistics]
     [config.core :refer [env]]
     [org.httpkit.server :refer [run-server]])
   (:gen-class :main true))
@@ -19,7 +20,9 @@
 (defn event-state-handler
   [event]
   (let [state @state/state
-        next-state (state/event->state state event)]
+        next-state (some-> state
+                           (state/event->state event)
+                           (statistics/win-loss-stats))]
     (if (nil? next-state) state
       (do
         (push-event! next-state)

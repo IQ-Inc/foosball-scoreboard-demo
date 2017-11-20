@@ -11,7 +11,9 @@
 (defn- pronounce-winners-losers
   "Adds winners and losers keys to the state, with a vector of related user IDs"
   [state]
-  (let [ids-of (fn [team] (set (map :id (vals (-> state :teams team)))))]
+  (let [ids-of (fn [team] 
+                 (set (filter (comp not nil?)
+                   (map :id (vals (-> state :teams team))))))]
     (if-let [winner (state/who-is-winning state)]
       (-> state
           (assoc :winners (ids-of winner))
