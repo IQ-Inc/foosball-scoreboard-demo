@@ -9,4 +9,13 @@
   [from to]
   (into {}
     (filter (fn [[k v]] (not (= (k from) v)))
-            (select-keys to (keys from)))))
+            (reduce (fn [m [k v]]
+                      (cond
+                        (map? v) (assoc m k (delta (k from) v))
+                        :else (assoc m k v)))
+                    {} (select-keys to (keys from))))))
+
+(defn patch
+  "Applies the delta d to the map m"
+  [m d]
+  (merge m d))
