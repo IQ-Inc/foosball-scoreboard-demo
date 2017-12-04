@@ -11,7 +11,10 @@
     (filter (fn [[k v]] (not (= (k from) v)))
             (reduce (fn [m [k v]]
                       (cond
-                        (map? v) (assoc m k (delta (k from) v))
+                        (map? v) (let [vs (delta (k from) v)]
+                                   (if (not (empty? vs))
+                                       (assoc m k vs)
+                                       m))
                         :else (assoc m k v)))
                     {} (select-keys to (keys from))))))
 

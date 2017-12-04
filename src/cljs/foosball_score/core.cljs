@@ -8,6 +8,7 @@
    [secretary.core :as secretary :include-macros true]
    [accountant.core :as accountant]
    [taoensso.sente  :as sente]
+   [foosball-score.deltapatch :refer [delta patch]]
    [foosball-score.game :as game]
    [foosball-score.clock :as clock]
    [foosball-score.keypress :refer [keypress-handler]]
@@ -16,7 +17,7 @@
    [foosball-score.socket :as socket]
    [foosball-score.players :as players]
    [foosball-score.util :refer [ws-url]]
-   [foosball-score.state :as state :refer [state]]))
+   [foosball-score.state :as state]))
 
 ;; -------------------------
 ;; Websocket setup
@@ -33,8 +34,7 @@
 
 (defn- notify-server
   [state]
-  (state/update-state! state)
-  (chsk-send! [:foosball/v0 state]))
+  (chsk-send! [:foosball/v0 (delta @state/state state)]))
 
 (defn- swap-team!
   "Accepts the state, then returns a function that will swap the team players
@@ -44,7 +44,8 @@
 
 (defmethod socket/foosball-event :default
   [event]
-  (state/update-state! (:event event)))
+  (println (:event event))
+  (state/update-state! (patch @state/state (:event event))))
 
 (defn- on-key-press!
   "Maps a character chr to a keypress handler, forwarding through the state."
@@ -87,7 +88,7 @@
 (def page (atom #'home-page))
 
 (defn current-page []
-  [:div [@page @state]])
+  [:div [@page @state/state]])
 
 (secretary/defroute "/" []
   (reset! page #'home-page))

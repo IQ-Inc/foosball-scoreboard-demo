@@ -40,6 +40,12 @@
     (let [from      {:foo [1 2] :baz 99 :bar '(4 5)}
           to        {:foo [1 3] :baz 99 :bar '(7 8)}
           expected  {:foo [1 3] :bar '(7 8)}]
+      (is (= expected (delta from to)))))
+      
+  (testing "shows no change for similar submaps"
+    (let [from      {:foo {:bar 1 :baz 2} :qux 43}
+          to        {:foo {:bar 1 :baz 2} :qux 42}
+          expected  {:qux 42}]
       (is (= expected (delta from to))))))
 
 (deftest patch-test

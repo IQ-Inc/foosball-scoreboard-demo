@@ -2,9 +2,10 @@
   "Server and serial startup"
   {:author "Ian McIntyre"}
   (:require 
+    [foosball-score.events :as events]
+    [foosball-score.deltapatch :refer [delta patch]]
     [foosball-score.handler :refer [app push-event! listen-for-ws foosball-event]]
     [foosball-score.serial :as serial]
-    [foosball-score.events :as events]
     [foosball-score.state :as state]
     [foosball-score.tick :as tick]
     [foosball-score.statistics :as statistics]
@@ -15,7 +16,7 @@
 
 (defmethod foosball-event :default
   [event]
-  (state/update-state! event)
+  (state/update-state! (patch @state/state event))
   (push-event! event))
 
 (defn event-state-handler
@@ -26,7 +27,7 @@
                            (statistics/win-loss-stats))]
     (if (nil? next-state) state
       (do
-        (push-event! next-state)
+        (push-event! (delta state next-state))
         (state/update-state! next-state)))
     (if-let [winners (:winners next-state)]
       (doseq [winner winners]
