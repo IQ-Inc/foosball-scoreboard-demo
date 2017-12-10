@@ -16,6 +16,7 @@
 
 (defmethod foosball-event :default
   [event]
+  (println event)
   (state/update-state! (patch @state/state event))
   (push-event! event))
 

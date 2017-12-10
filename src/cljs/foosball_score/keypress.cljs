@@ -46,7 +46,7 @@
     (-> state (assoc :game-mode next-game-mode))))
 
 (defmethod keypress-handler \space
-  [state chr]
+  [state _]
   (state/new-game state))
 
 (defmethod keypress-handler :default

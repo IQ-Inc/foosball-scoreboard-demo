@@ -46,6 +46,14 @@
     (let [from      {:foo {:bar 1 :baz 2} :qux 43}
           to        {:foo {:bar 1 :baz 2} :qux 42}
           expected  {:qux 42}]
+      (is (= expected (delta from to)))))
+      
+  (testing "shows a player sign in"
+    (let [from      {:teams {:black {:offense nil :defense nil}
+                             :gold  {:offense nil :defense nil}}}
+          addition  {:name "Ian" :id "ABC123" :stats {:wins 1 :loses 2}}
+          to        (assoc-in from [:teams :gold :offense] addition)
+          expected  {:teams {:gold {:offense addition}}}]
       (is (= expected (delta from to))))))
 
 (deftest patch-test
@@ -53,4 +61,8 @@
     (is (= {:foo 1} (patch {} {:foo 1}))))
     
   (testing "patches an existing map with its delta"
-    (is (= {:foo 3 :bar 1} (patch {:foo 1 :bar 1} {:foo 3})))))
+    (is (= {:foo 3 :bar 1} (patch {:foo 1 :bar 1} {:foo 3}))))
+    
+  (testing "patches a nested map without losing keys"
+    (is (= {:foo {:bar 1 :baz 2}}
+           (patch {:foo {:bar 1 :baz 1}} {:foo {:baz 2}})))))

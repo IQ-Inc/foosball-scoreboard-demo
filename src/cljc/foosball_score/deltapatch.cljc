@@ -1,5 +1,5 @@
 (ns foosball-score.deltapatch
-  "Identify deltas and patch a map by a delta"
+  "Delta and patching for maps"
   {:author "Ian McIntyre"}
   (:require
     [clojure.set :as set]))
@@ -20,5 +20,12 @@
 
 (defn patch
   "Applies the delta d to the map m"
-  [m d]
-  (merge m d))
+  [from d]
+  (reduce (fn [n [k v]]
+            (cond
+              (map? v) (let [vs (patch (k from) v)]
+                         (if (not (empty? vs))
+                             (assoc n k vs)
+                             n))
+              :else (assoc n k v)))
+          from d))
