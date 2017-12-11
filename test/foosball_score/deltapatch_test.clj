@@ -54,6 +54,14 @@
           addition  {:name "Ian" :id "ABC123" :stats {:wins 1 :loses 2}}
           to        (assoc-in from [:teams :gold :offense] addition)
           expected  {:teams {:gold {:offense addition}}}]
+      (is (= expected (delta from to)))))
+      
+  (testing "shows a player sign out"
+    (let [player    {:name "Ian" :id "ABC123" :stats {:wins 1 :loses 2}}
+          from      {:teams {:black {:offense player :defense nil}
+                             :gold  {:offense nil    :defense nil}}}
+          to        (assoc-in from [:teams :black :offense] nil)
+          expected  {:teams {:black {:offense nil}}}]
       (is (= expected (delta from to))))))
 
 (deftest patch-test

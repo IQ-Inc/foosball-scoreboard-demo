@@ -7,16 +7,17 @@
 (defn delta
   "Returns the delta from from to to for keys relevant to both"
   [from to]
-  (into {}
-    (filter (fn [[k v]] (not (= (k from) v)))
-            (reduce (fn [m [k v]]
-                      (cond
-                        (map? v) (let [vs (delta (k from) v)]
-                                   (if (not (empty? vs))
-                                       (assoc m k vs)
-                                       m))
-                        :else (assoc m k v)))
-                    {} (select-keys to (keys from))))))
+  (cond
+    (nil? from) to
+    (nil? to) nil
+    :else
+      (let [ks   (set/intersection (set (keys from)) (set (keys to)))
+            dks  (filter #(not (= (% from) (% to))) ks)]
+        (reduce (fn [m k]
+                  (if (or (map? (k from)) (map? (k to)))
+                      (assoc m k (delta (k from) (k to)))
+                      (assoc m k (k to))))
+                {} dks))))
 
 (defn patch
   "Applies the delta d to the map m"
