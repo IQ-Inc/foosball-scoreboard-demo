@@ -44,7 +44,6 @@
 
 (defmethod socket/foosball-event :default
   [event]
-  (println (:event event))
   (state/update-state! (patch @state/state (:event event))))
 
 (defn- on-key-press!
