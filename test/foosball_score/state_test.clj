@@ -139,7 +139,29 @@
           expected {:teams {:gold {:defense "Ian"}
                            :black {:offense "Ryan" :defense "Mike"}}
                     :next-player [:black :offense]}]
-      (is (= (state/add-player data "Ian") expected)))))
+      (is (= (state/add-player data "Ian") expected))))
+      
+  (testing "Replaces duplicated player in new position"
+    (let [data {:next-player [:gold :defense]
+                :teams {:black {:offense "Ryan" :defense "Mike"}}}
+          expected {:teams {:gold {:defense "Ryan"}
+                           :black {:offense nil :defense "Mike"}}
+                    :next-player [:black :offense]}]
+      (is (= (state/add-player data "Ryan") expected))))
+
+  (testing "Squashes existing player for next player assignment"
+    (let [data {:next-player [:black :defense]
+                :teams {:black {:offense "Ryan" :defense "Mike"}}}
+          expected {:teams {:black {:offense "Ryan" :defense "Ian"}}
+                    :next-player [:gold :defense]}]
+      (is (= (state/add-player data "Ian") expected))))
+      
+  (testing "Squashes existing player to remove a duplicate"
+    (let [data {:next-player [:black :defense]
+                :teams {:black {:offense "Ryan" :defense "Mike"}}}
+          expected {:teams {:black {:offense nil :defense "Ryan"}}
+                    :next-player [:gold :defense]}]
+      (is (= (state/add-player data "Ryan") expected)))))
 
 (deftest event-state-transition-test
   (testing "Drop ball transitions to playing"
