@@ -90,11 +90,13 @@
       ;; so we can get back into sync
       (first transitions)))
 
+(def all-positions [[:black :offense]
+                    [:gold  :offense]
+                    [:black :defense]
+                    [:gold  :defense]])
+
 (def next-player-transition
-  (partial next-transition [[:black :offense]
-                            [:gold  :offense]
-                            [:black :defense]
-                            [:gold  :defense]]))
+  (partial next-transition all-positions))
 
 (def next-game-mode-transition
   (partial next-transition [:first-to-max :win-by-two :timed]))
@@ -163,11 +165,28 @@
   {:pre [(some #{status} [:waiting :playing :black :gold])]}
   (assoc state :status status))
 
+(defn- signed-in-players
+  "Returns the signed in players in a map of names to positions"
+  [{:keys [teams]}]
+  (reduce (fn [map position]
+            (if-let [player (get-in teams position)]
+              (assoc map player position)
+              map))
+          {} all-positions))
+
 (defn add-player
-  "Adds a player to a team, and defines the next player assignment"
+  "Adds a player to a team, and defines the next player assignment. If the
+  player is already in the state, add-player removes the older player assignment
+  in favor of the new one. May squash a player assignment if the next player is
+  already occupied."
   [{:keys [next-player] :as state} player]
-  (let [next-next-player (next-player-transition next-player)]
-    (-> state
+  (let [signed-in (signed-in-players state)
+        next-next-player (next-player-transition next-player)]
+    (-> (if-let [dup-position (get signed-in player)]
+          ;; Cannot dissoc-in, so we use assoc-in and set the player to nil.
+          ;; This conforms to a player who is not signed in
+          (assoc-in state (cons :teams dup-position) nil)
+          state)
         (assoc :next-player next-next-player)
         (assoc-in (cons :teams next-player) player))))
 
