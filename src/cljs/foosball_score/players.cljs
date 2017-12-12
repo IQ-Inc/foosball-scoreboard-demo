@@ -23,7 +23,7 @@
 (defn- player-display
   "Returns a string representing the player name and w/l counts"
   [{:keys [id name stats]}]
-  (str (if (nil? name) id name) " (" (:wins stats) "-" (:losses stats) ")"))
+  (str (if (nil? name) id name) " (" (:wins stats) "-" (:losses stats) "-" (:ties stats) ")"))
 
 (defn- player
   "Component that shows the player position icon and name"

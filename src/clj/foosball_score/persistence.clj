@@ -7,12 +7,11 @@
     - key 'stats',    value type map containing...
       - key 'win',    value type int
       - key 'losses', value type int
+      - key 'ties',   value type int
       
   The athlete convenience methods provided out-of-the-box access to
   these values."
-  {:author "Ian McIntyre"}
-  (:require
-    [foosball-score.util :refer [nilsafe]]))
+  {:author "Ian McIntyre"})
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Hard-coded players
@@ -34,7 +33,8 @@
     :stats                ;; Statistics
       (hash-map
         :wins 0           ;; athlete wins
-        :losses 0)))      ;; athlete losses
+        :losses 0         ;; athlete losses
+        :ties 0)))        ;; athlete ties
 
 (defmacro with-name
   [name id]
@@ -91,11 +91,18 @@
   [athlete]
   (get-in athlete [:stats :losses]))
 
+(defn athlete-ties
+  "Get the athlete's tie count"
+  [athlete]
+  (get-in athlete [:stats :ties]))
+
 (defn athlete-games
   "Get the total number of games played by athlete"
   [athlete]
-  (let [[w l] [(athlete-wins athlete) (athlete-losses athlete)]]
-    (+ w l)))
+  (let [[w l t] [(athlete-wins athlete)
+                 (athlete-losses athlete)
+                 (athlete-ties athlete)]]
+    (+ w l t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Persistence methods
@@ -143,6 +150,11 @@
   "Add a loss for an athlete with ID id"
   [id]
   (change-stats! id :losses inc))
+
+(defn tie-for!
+  "Add a tie for an athlete with ID id"
+  [id]
+  (change-stats! id :ties inc))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Athlete querying

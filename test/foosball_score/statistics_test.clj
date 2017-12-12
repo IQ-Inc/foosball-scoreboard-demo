@@ -12,7 +12,7 @@
   true)
 
 (def simple-stats
-  {:wins 0 :losses 0})
+  {:wins 0 :losses 0 :ties 0})
 
 (def test-state
   (-> state/new-state 
@@ -51,7 +51,13 @@
       (is (= expected (statistics/win-loss-stats input)))))
           
   (testing "Has no win / loss stats when game is tied"
-    (is (= (statistics/win-loss-stats test-state) test-state)))
+    (is (= (statistics/win-loss-stats test-state)
+           (-> test-state
+               (assoc :tiers #{"bo" "bd" "go" "gd"})
+               (update-in [:teams :black :defense :stats :ties] inc)
+               (update-in [:teams :black :offense :stats :ties] inc)
+               (update-in [:teams :gold :defense :stats :ties] inc)
+               (update-in [:teams :gold :offense :stats :ties] inc)))))
     
   (testing "Has no win / loss stats when game is not over"
     (let [input (assoc test-state :game-mode :not-over)]
