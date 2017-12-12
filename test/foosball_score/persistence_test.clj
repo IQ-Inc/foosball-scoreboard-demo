@@ -11,7 +11,8 @@
     :stats
       (hash-map
         :wins 5
-        :losses 7)))
+        :losses 7
+        :ties 1)))
 
 (deftest athlete-test
   (testing "Athlete is claimed"
@@ -29,6 +30,9 @@
 
   (testing "Get athlete losses"
     (is (= 7 (persist/athlete-losses (make-test-athlete)))))
+  
+  (testing "Get athlete ties"
+    (is (= 1 (persist/athlete-ties (make-test-athlete)))))
 
   (testing "Get athlete games"
-    (is (= 12 (persist/athlete-games (make-test-athlete))))))
+    (is (= 13 (persist/athlete-games (make-test-athlete))))))
