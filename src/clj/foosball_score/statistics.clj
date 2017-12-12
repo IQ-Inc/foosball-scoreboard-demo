@@ -2,6 +2,7 @@
   "Game and player statistics module"
   {:author "Ian McIntyre"}
   (:require
+    [clojure.set :refer [union]]
     [foosball-score.state :as state]
     [foosball-score.util :refer [teams]]))
 
@@ -19,7 +20,7 @@
           (assoc :winners (ids-of winner))
           (assoc :losers (ids-of (anti-team winner)))
           (assoc :winning-team winner))
-    state)))
+      (reduce #(update %1 :tiers union (ids-of %2)) state teams))))
 
 (defn- inc-win-loss-count
   [state team pos wl]
@@ -40,7 +41,7 @@
       (-> state
           (per-position winning-team :wins)
           (per-position losing-team :losses)))
-    state))
+    (reduce #(per-position %1 %2 :ties) state teams)))
 
 (defn win-loss-stats
   "Accepts the state, and computes relavant statistics. If the statistics should
