@@ -11,9 +11,7 @@
       
   The athlete convenience methods provided out-of-the-box access to
   these values."
-  {:author "Ian McIntyre"}
-  (:require
-    [foosball-score.util :refer [nilsafe]]))
+  {:author "Ian McIntyre"})
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Hard-coded players
