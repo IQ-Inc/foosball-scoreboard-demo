@@ -36,7 +36,7 @@ and updates will be pushed to all connected clients.
 |  `b`                  | Swap black team                |
 |  `g`                  | Swap gold team                 |
 |  `m`                  | Toggle game modes              |
-|  `j/k`                | Decrease/increase max score    |
+|  `j/k`                | Decrease/increase mode value   |
 
 ## Serial events
 
