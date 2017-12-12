@@ -38,7 +38,8 @@
     (if (nil? next-state) state
       (let [next-state (-> next-state
                            (persist-using! :winners persist/win-for!)
-                           (persist-using! :losers persist/loss-for!))]
+                           (persist-using! :losers persist/loss-for!)
+                           (persist-using! :tiers persist/tie-for!))]
         (push-event! (delta state next-state))
         (state/update-state! next-state)))))
 
