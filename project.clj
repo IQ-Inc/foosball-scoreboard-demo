@@ -20,7 +20,8 @@
                   :exclusions [org.clojure/tools.reader]]
                  [com.taoensso/sente "1.11.0"]
                  [http-kit "2.2.0"]
-                 [clj-serial "2.0.4-SNAPSHOT"]]
+                 [clj-serial "2.0.4-SNAPSHOT"]
+                 [clj-tcp "1.0.1"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.5"]
