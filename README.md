@@ -45,11 +45,11 @@ and pushes updates to connected clients.
 Use `m` on the keyboard to cycle through game modes:
 
 - First to a maximum score
-  - `j/k` increase / decrease max score
+  - `j/k` decrease / increase max score
 - First to a maximum score, win by two points
-  - `j/k` increase / decrease max score
+  - `j/k` decrease / increase max score
 - Timed mode, time counts down
-  - `j/k` increase / decrease play time
+  - `j/k` decrease / increase play time
 
 ## Events
 
