@@ -28,7 +28,9 @@
 
 (defn serial-message-accumulate
   "Accumulates serial bytes into a string until the newline character. The
-  function accounts for carriage returns by trimming excess whitespace."
+  function accounts for carriage returns by trimming excess whitespace.
+  
+  DO NOT USE EXPOSED FOR TESTING."
   [in-stream]
   (loop [value (.read in-stream)
          acc []]
