@@ -1,5 +1,5 @@
 language: clojure
-script: lein do uberjar, test
+script: lein do uberjar, test :all
 deploy:
   provider: releases
   api_key:

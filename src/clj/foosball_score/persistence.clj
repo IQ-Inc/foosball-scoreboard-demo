@@ -50,7 +50,7 @@
     eric  (with-name "ERIC" eric)
     norb  (with-name "NORB" norb)))
 
-(defonce ^:private in-mem-db (atom hard-coded-players))
+(def ^:dynamic *in-mem-db* (atom hard-coded-players))
 
 ;;;;;;;;;;
 ;; Avatars
@@ -111,19 +111,19 @@
 (defn lookup-athlete
   "Returns the athlete or nil if there is no athlete by that ID."
   [id]
-  (get @in-mem-db id))
+  (get @*in-mem-db* id))
 
 (defn create-athlete!
   "Create an athlete by ID id. If the ID exists, create-athlete! does nothing."
   [id]
   (when-not (lookup-athlete id)
-    (swap! in-mem-db assoc id (make-new-athlete id))
+    (swap! *in-mem-db* assoc id (make-new-athlete id))
     (lookup-athlete id)))
 
 (defn delete-athlete!
   "Remove the athlete by ID id. Does nothing if the ID does not exist."
   [id]
-  (swap! in-mem-db dissoc id))
+  (swap! *in-mem-db* dissoc id))
 
 (defn claim-athlete!
   "Claim an athlete with ID id by associating a name. Does nothing if the
@@ -132,14 +132,14 @@
   (let [athlete       (lookup-athlete id)
         named-athlete (assoc athlete :name name)]
     (when (not (athlete-claimed? athlete))
-      (swap! in-mem-db assoc id named-athlete))))
+      (swap! *in-mem-db* assoc id named-athlete))))
 
 (defn- change-stats!
   "Update the stat for an athlete with ID id using a function f.
   Does nothing if the athlete does not exist."
   [id stat f]
     (when (lookup-athlete id)
-      (swap! in-mem-db update-in [id :stats stat] f)))
+      (swap! *in-mem-db* update-in [id :stats stat] f)))
 
 (defn win-for!
   "Add a win for an athlete with ID id"
@@ -171,7 +171,7 @@
   
   This is just so Ian can practice optional arguments."
   [pred & opts]
-  (let [table     @in-mem-db
+  (let [table     @*in-mem-db*
         aggregate (if (some #{:as-map} opts)
                       (partial into {})
                       identity)]
