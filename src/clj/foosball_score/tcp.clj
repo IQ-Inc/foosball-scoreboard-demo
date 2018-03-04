@@ -16,9 +16,16 @@
   [chan]
   (swap! subscribers conj chan))
 
+(defn- remove-line-endings
+  [chars]
+  (filter #(not (#{\newline \return} %)) 
+          chars))
+
 (defn- bytestream->string
   [bs]
-  (apply str (butlast (slurp bs))))
+  (apply str (->> bs
+                  slurp
+                  remove-line-endings)))
 
 (defn- loop-and-read!
   [client]

@@ -1,3 +1,9 @@
+;; TODO remove once the 'Insecure HTTP repository'
+;; issue dissapears in leiningen (over 2.8.1)
+(require 'cemerick.pomegranate.aether)
+(cemerick.pomegranate.aether/register-wagon-factory!
+ "http" #(org.apache.maven.wagon.providers.http.HttpWagon.))
+
 (defproject foosball-score "0.1.0-SNAPSHOT"
   :description "Demo foosball scoreboard"
   :url "https://github.com/IQ-Inc/foosball-scoreboard-demo"
