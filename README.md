@@ -20,27 +20,40 @@ analytics, and a Slack integration.
 Download the latest release from GitHub. From the command line, run
 
 ```bash
-$ java -jar foosball-scoreboard.jar /dev/[your-serial-device] 115200
+$ # Connect directly to a serial device (specify device)
+$ java -jar foosball-scoreboard.jar serial /dev/[your-serial-device]
+$ # Connect to a TCP device that mimics the serial device (specify port)
+$ java -jar foosball-scoreboard.jar tcp 3667
 ```
 
-The command line arguments, in order, are the serial device and the serial
-device baud rate. The program starts a webserver and app accessible at
-`localhost:3000`. The server monitors the serial connection for foosball events,
-and updates will be pushed to all connected clients.
+The program starts a webserver and app accessible at
+`localhost:3000`. The server monitors the connection for foosball events
+and pushes updates to connected clients.
 
 ## Keyboard controls
 
 | Key                   |    Event                       |
 | --------------------- | ------------------------------ |
 |  `SPACE`              | Start a new game               |
-|  `b`                  | Swap black team                |
-|  `g`                  | Swap gold team                 |
+|  `b`                  | Swap black team members        |
+|  `g`                  | Swap gold team members         |
 |  `m`                  | Toggle game modes              |
-|  `j/k`                | Decrease/increase max score    |
+|  `j/k`                | Decrease/increase mode value   |
 
-## Serial events
+## Supported game modes
 
-The server will handle any serial message that is suffixed with a newline (char
+Use `m` on the keyboard to cycle through game modes:
+
+- First to a maximum score
+  - `j/k` decrease / increase max score
+- First to a maximum score, win by two points
+  - `j/k` decrease / increase max score
+- Timed mode, time counts down
+  - `j/k` decrease / increase play time
+
+## Events
+
+The server will handle any message that is suffixed with a newline (char
 `10`). The server expects the following serial events to correspond to specific
 foosball events:
 
@@ -51,7 +64,10 @@ foosball events:
 |  `"BG"`               | Black scores a goal  |
 |  `"GG"`               | Gold scores a goal   |
 
-The codes are configurable in the Clojure `foosball-score.events` namespace.
+Consider using the `serial-msg!` function from the `repl` namespace to simulate
+serial events during testing. If you're testing a TCP event server, consider using
+`netcat` to publish the same messages. The codes are configurable in the
+`foosball-score.events` namespace.
 
 A six character string is expected to correspond with a player's ID badge.
 

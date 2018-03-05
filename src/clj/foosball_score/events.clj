@@ -30,9 +30,9 @@
 ;; from an ID card. Example ID: 18A632
 (defmethod on-msg-size (count "18A632")
   [msg]
-  (if-let [claimed-user (persist/athlete-name (persist/lookup-athlete msg))]
+  (if-let [claimed-user (persist/lookup-athlete msg)]
     claimed-user
-    msg))
+    (persist/create-athlete! msg)))
 
 ;; Anything else is not handled
 (defmethod on-msg-size :default

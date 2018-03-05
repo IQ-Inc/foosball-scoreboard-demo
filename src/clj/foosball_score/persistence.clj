@@ -7,12 +7,11 @@
     - key 'stats',    value type map containing...
       - key 'win',    value type int
       - key 'losses', value type int
+      - key 'ties',   value type int
       
   The athlete convenience methods provided out-of-the-box access to
   these values."
-  {:author "Ian McIntyre"}
-  (:require
-    [foosball-score.util :refer [nilsafe]]))
+  {:author "Ian McIntyre"})
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Hard-coded players
@@ -27,29 +26,31 @@
 
 (defn- make-new-athlete
   "Make the structure for a new athlete"
-  []
+  [id]
   (hash-map
+    :id id                ;; unique ID
     :name nil             ;; athlete name is empty and "unclaimed" by default
     :stats                ;; Statistics
       (hash-map
         :wins 0           ;; athlete wins
-        :losses 0)))      ;; athlete losses
+        :losses 0         ;; athlete losses
+        :ties 0)))        ;; athlete ties
 
 (defmacro with-name
-  [name]
-  `(assoc (make-new-athlete) :name ~name))
+  [name id]
+  `(assoc (make-new-athlete ~id) :name ~name))
 
 (def hard-coded-players
   (hash-map
-    ian   (with-name "IAN")
-    mikel (with-name "MIKE L")
-    mikes (with-name "MIKE S")
-    tim   (with-name "TIM")
-    ryan  (with-name "RYAN")
-    eric  (with-name "ERIC")
-    norb  (with-name "NORB")))
+    ian   (with-name "IAN" ian)
+    mikel (with-name "MIKE L" mikel)
+    mikes (with-name "MIKE S" mikes)
+    tim   (with-name "TIM" tim)
+    ryan  (with-name "RYAN" ryan)
+    eric  (with-name "ERIC" eric)
+    norb  (with-name "NORB" norb)))
 
-(defonce ^:private in-mem-db (atom hard-coded-players))
+(def ^:dynamic *in-mem-db* (atom hard-coded-players))
 
 ;;;;;;;;;;
 ;; Avatars
@@ -90,11 +91,18 @@
   [athlete]
   (get-in athlete [:stats :losses]))
 
+(defn athlete-ties
+  "Get the athlete's tie count"
+  [athlete]
+  (get-in athlete [:stats :ties]))
+
 (defn athlete-games
   "Get the total number of games played by athlete"
   [athlete]
-  (let [[w l] [(athlete-wins athlete) (athlete-losses athlete)]]
-    (+ w l)))
+  (let [[w l t] [(athlete-wins athlete)
+                 (athlete-losses athlete)
+                 (athlete-ties athlete)]]
+    (+ w l t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Persistence methods
@@ -103,18 +111,19 @@
 (defn lookup-athlete
   "Returns the athlete or nil if there is no athlete by that ID."
   [id]
-  (get @in-mem-db id))
+  (get @*in-mem-db* id))
 
 (defn create-athlete!
   "Create an athlete by ID id. If the ID exists, create-athlete! does nothing."
   [id]
   (when-not (lookup-athlete id)
-    (swap! in-mem-db assoc id (make-new-athlete))))
+    (swap! *in-mem-db* assoc id (make-new-athlete id))
+    (lookup-athlete id)))
 
 (defn delete-athlete!
   "Remove the athlete by ID id. Does nothing if the ID does not exist."
   [id]
-  (swap! in-mem-db dissoc id))
+  (swap! *in-mem-db* dissoc id))
 
 (defn claim-athlete!
   "Claim an athlete with ID id by associating a name. Does nothing if the
@@ -123,14 +132,14 @@
   (let [athlete       (lookup-athlete id)
         named-athlete (assoc athlete :name name)]
     (when (not (athlete-claimed? athlete))
-      (swap! in-mem-db assoc id named-athlete))))
+      (swap! *in-mem-db* assoc id named-athlete))))
 
 (defn- change-stats!
   "Update the stat for an athlete with ID id using a function f.
   Does nothing if the athlete does not exist."
   [id stat f]
     (when (lookup-athlete id)
-      (swap! in-mem-db update-in [id :stats stat] f)))
+      (swap! *in-mem-db* update-in [id :stats stat] f)))
 
 (defn win-for!
   "Add a win for an athlete with ID id"
@@ -141,6 +150,11 @@
   "Add a loss for an athlete with ID id"
   [id]
   (change-stats! id :losses inc))
+
+(defn tie-for!
+  "Add a tie for an athlete with ID id"
+  [id]
+  (change-stats! id :ties inc))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Athlete querying
@@ -157,7 +171,7 @@
   
   This is just so Ian can practice optional arguments."
   [pred & opts]
-  (let [table     @in-mem-db
+  (let [table     @*in-mem-db*
         aggregate (if (some #{:as-map} opts)
                       (partial into {})
                       identity)]

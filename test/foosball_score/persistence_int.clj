@@ -2,7 +2,7 @@
   "Integration tests for persistence."
   {:author "Ian McIntyre"}
   (:require
-    [foosball-score.persistence :as persist]
+    [foosball-score.persistence :as persist :refer [*in-mem-db*]]
     [clojure.test :refer :all]))
 
 (def athlete-ids #{"ABC" "ZYX" "123" "987" "CLAIMED"})
@@ -23,11 +23,12 @@
     (persist/delete-athlete! athlete)))
 
 (defn- with-database
-  "Fixture for running a test with the database"
+  "Fixture for running a test with the database. Rebinds the dynamic database"
   [run-test]
-  (create-db)
-  (run-test)
-  (destroy-db))
+  (binding [*in-mem-db* (atom {})]
+    (create-db)
+    (run-test)
+    (destroy-db)))
 
 (deftest ^:integration test-filter-unclaimed-athletes
   "Ensure correct athletes are unclaimed"
