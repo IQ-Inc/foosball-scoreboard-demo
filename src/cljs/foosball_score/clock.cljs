@@ -34,6 +34,10 @@
   [{:keys [time end-time]}]
   (- end-time time))
 
+(defmethod time-repr :timed-ot
+  [state]
+  (time-repr (assoc state :game-mode :timed)))
+
 (defmethod time-repr :default
   [{:keys [time]}]
   time)

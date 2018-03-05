@@ -7,7 +7,8 @@
 (def mode->str
   {:win-by-two    (fn [_] "Win by two")
    :first-to-max  (fn [n] (str "First to " n))
-   :timed         (fn [_] "Timed game")})
+   :timed         (fn [_] "Timed game")
+   :timed-ot      (fn [_] "Timed game (overtime)")})
 
 ;;;;;;;;;;;;;
 ;; Components
@@ -22,7 +23,11 @@
 
 (defmethod left-mode-display :timed
   [_ _ end-time]
-  [:div (str "End time: " (game-time-str end-time))])
+  [:div (str "Duration: " (game-time-str end-time))])
+
+(defmethod left-mode-display :timed-ot
+  [game-mode max-score end-time]
+  (left-mode-display :timed max-score end-time))
 
 (defn- right-mode-display
   "Show the game mode"
