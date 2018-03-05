@@ -32,6 +32,13 @@
         func (get lookup direction)]
     (func state)))
 
+(defmethod handle-up-down :timed-ot
+  [state direction]
+  (assoc
+    (handle-up-down (assoc state :game-mode :timed) direction)
+    :game-mode
+    :timed-ot))
+
 (defmethod keypress-handler \j
   [state _]
   (handle-up-down state dec))

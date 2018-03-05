@@ -8,6 +8,7 @@
    [secretary.core :as secretary :include-macros true]
    [accountant.core :as accountant]
    [taoensso.sente  :as sente]
+   [foosball-score.colors :as colors]
    [foosball-score.deltapatch :refer [delta patch]]
    [foosball-score.game :as game]
    [foosball-score.clock :as clock]
@@ -66,14 +67,14 @@
            (not (state/game-over? state))
            (<= (- end-time time) 10)
            (= status :playing)
-           (= game-mode :timed))
-    "45px solid red"
-    "none"))
+           (some #{game-mode} [:timed :timed-ot]))
+    {:outline-width "45px" :outline-color colors/overtime-accent :outline-style "solid"}
+    {:outline "none"}))
 
 ;; -------------------------
 ;; Views
 (defn home-page [state]
-  [:div {:tab-index "1" :style {:outline (flash-effect state @flash)}
+  [:div {:tab-index "1" :style (flash-effect state @flash)
          :on-key-press (partial on-key-press! state)}
    [modes/game-modes state]
    [clock/game-clock state]

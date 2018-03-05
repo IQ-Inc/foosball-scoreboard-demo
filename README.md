@@ -50,6 +50,8 @@ Use `m` on the keyboard to cycle through game modes:
   - `j/k` decrease / increase max score
 - Timed mode, time counts down
   - `j/k` decrease / increase play time
+- Timed mode (overtime): sudden-death, next-point-wins mode
+  - `j/k` decrease / increase play time
 
 ## Events
 

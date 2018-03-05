@@ -93,10 +93,24 @@
               :end-time 61}]
 
     (testing "Game is not over when time does not equal end-time"
-      (is (not (state/game-over? data))))
+      (doseq [mode [:timed :timed-ot]]
+        (is (not (state/game-over? (assoc data :game-mode mode))))))
 
     (testing "Game is over when time equals end-time"
-      (let [input (assoc data :time 61)]
+      (let [input (update data :time inc)]
+        (is (state/game-over? input))))
+        
+    (testing "Game is not over for timed OT game"
+      (let [input (-> data
+                      (update :time inc)
+                      (assoc :game-mode :timed-ot))]
+        (is (not (state/game-over? input)))))
+        
+    (testing "Game is over for timed OT game with differing scores"
+      (let [input (-> data
+                      (update :time inc)
+                      (assoc :game-mode :timed-ot)
+                      (update-in [:scores :black] inc))]
         (is (state/game-over? input))))))
 
 (deftest swap-players-test
@@ -225,15 +239,34 @@
     (is (nil? (state/event->state
                 (assoc-in state/new-state [:scores :black] 5) :drop))))
 
+  (testing "Game is frozen when in overtime"
+    (let [state (-> state/new-state
+                    (assoc :status :playing)
+                    (assoc :game-mode :timed-ot)
+                    (assoc :time (:end-time state/new-state)))]
+      (is (= state (state/event->state state :tick)))))
+
+  (testing "Score increments from overtime"
+    (let [state (-> state/new-state
+                    (assoc :status :playing)
+                    (assoc :game-mode :timed-ot)
+                    (assoc :time (:end-time state/new-state)))]
+      (is (= (-> state
+                 (update-in [:scores :black] inc)
+                 (assoc :status :black)
+                 (update :score-times conj {:time (:end-time state/new-state) :team :black}))
+             (state/event->state state :black)))))
+
   (testing "Time increments when in a timed game"
-    (let [input (-> state/new-state
-                    (assoc :game-mode :timed)
-                    (assoc :time 60)
-                    (assoc :end-time 120)
-                    (state/change-status :playing))
-          expected (-> input
-                       (update :time inc))]
-      (is (= expected (state/event->state input :tick))))))
+    (doseq [mode [:timed :timed-ot]]
+      (let [input (-> state/new-state
+                      (assoc :game-mode mode)
+                      (assoc :time 60)
+                      (assoc :end-time 120)
+                      (state/change-status :playing))
+            expected (-> input
+                        (update :time inc))]
+        (is (= expected (state/event->state input :tick)))))))
 
 (deftest new-game-test
   (testing "Resets everything but max-score, game-mode, and end-time"

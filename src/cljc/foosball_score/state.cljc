@@ -99,7 +99,7 @@
   (partial next-transition all-positions))
 
 (def next-game-mode-transition
-  (partial next-transition [:first-to-max :win-by-two :timed]))
+  (partial next-transition [:first-to-max :win-by-two :timed :timed-ot]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State consumers
@@ -143,6 +143,18 @@
 (defmethod game-over? :timed
   [{:keys [time end-time]}]
   (<= end-time time))
+
+(defmethod game-over? :timed-ot
+  [state]
+  (and (not (nil? (who-is-winning state)))
+       (game-over? (assoc state :game-mode :timed))))
+
+(defn overtime?
+  "Returns true if the game is in overtime, else false"
+  [state]
+  (and (= (:game-mode state) :timed-ot)
+       (game-over? (assoc state :game-mode :timed))
+       (nil? (who-is-winning state))))
 
 (defn point-for
   "Returns a state with a point added for team, or the current state if
@@ -247,7 +259,9 @@
 (defmethod event->state :tick
   [{:keys [status game-mode] :as state} _]
   (when (= status :playing)
-    (update state :time inc)))
+    (if (not (overtime? state))
+        (update state :time inc)
+        state)))
 
 ;; Drop ball
 (defmethod event->state :drop
