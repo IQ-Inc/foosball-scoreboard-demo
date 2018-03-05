@@ -2,7 +2,9 @@
   "Game mode configuration UI"
   {:author "Ian McIntyre"}
   (:require
-    [foosball-score.clock :refer [game-time-str]]))
+    [foosball-score.clock :refer [game-time-str]]
+    [foosball-score.state :as state]
+    [foosball-score.colors :as colors]))
 
 (def mode->str
   {:win-by-two    (fn [_] "Win by two")
@@ -34,8 +36,14 @@
   [game-mode max-score]
   [:div ((mode->str game-mode) max-score)])
 
+(defn- game-mode-style
+  "Returns a style depending on the state"
+  [state]
+  (if (state/overtime? state)
+    {:style {:background-color colors/overtime-accent}}))
+
 (defn game-modes
-  [{:keys [game-mode end-time] {:keys [max-score]} :scores}]
-  [:div.game-modes
+  [{:keys [game-mode end-time] {:keys [max-score]} :scores :as state}]
+  [:div.game-modes (game-mode-style state)
     [left-mode-display game-mode max-score end-time]
     [right-mode-display game-mode max-score]])

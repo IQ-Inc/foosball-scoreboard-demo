@@ -5,6 +5,8 @@
     [reagent.core :refer [atom]]
     [foosball-score.state :as state]))
 
+(def overtime-accent "#CC0000")
+
 (def colors
   (hash-map
     :gold       "#D4AF37"
@@ -12,13 +14,13 @@
 
 (def overtime-colors
   (hash-map
-    :gold  "#CC0000"
-    :black "#CC0000"))
+    :gold  overtime-accent
+    :black overtime-accent
+    nil    overtime-accent))
 
 (defn get-colors
   "Returns a hash-map of colors based on the game state"
   [state]
-  (if (and (state/game-over? state)
-           (nil? (state/who-is-winning state)))
+  (if (state/overtime? state)
     overtime-colors
     colors))

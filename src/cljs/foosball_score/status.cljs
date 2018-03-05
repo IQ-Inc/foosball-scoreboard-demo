@@ -22,6 +22,7 @@
    "your parents would be so proud of that goal"
    "gggooooooaaaaalllll"
    "cool"
+   "neat"
    "wow, what a shot"
    (str "neat shot, " team)
    (str "Team " team " is bringing chaos to this match!")])
@@ -53,16 +54,22 @@
   [{:keys [status] :as state}]
   (cond
     (state/game-over? state) (game-over-msg (state/who-is-winning state))
-    (state/overtime? state) "NEXT GOAL WINS"
+    (state/overtime? state) "OVERTIME: NEXT GOAL WINS"
     :else (let [msg-fn (status status-messages)]
             (string/upper-case (msg-fn status)))))
 
 (defn- status-style
   "Get the corresponding status style"
   [{:keys [status] :as state}]
-  (if (state/game-over? state)
+  (if (or (state/game-over? state) (state/overtime? state))
     (hash-map :color ((get-colors state) (state/who-is-winning state)))
     (hash-map :color (status (get-colors state)))))
+
+(defn- status-class
+  "Generates a map to apply a style class"
+  [state]
+  (if (state/overtime? state)
+    "blink"))
 
 ;; --------------------------------
 ;; Components
@@ -70,5 +77,5 @@
 (defn status-msg
   "The status message component"
   [{:keys [status] :as state}]
-  [:div.scoreboard.status {:style (status-style state)}
+  [:div.scoreboard.status {:style (status-style state) :class (status-class state)}
     [:p (get-status state)]])

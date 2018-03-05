@@ -153,7 +153,8 @@
   "Returns true if the game is in overtime, else false"
   [state]
   (and (= (:game-mode state) :timed-ot)
-       (game-over? (assoc state :game-mode :timed))))
+       (game-over? (assoc state :game-mode :timed))
+       (nil? (who-is-winning state))))
 
 (defn point-for
   "Returns a state with a point added for team, or the current state if

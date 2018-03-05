@@ -5,7 +5,7 @@
     [clojure.string :as string]
     [foosball-score.clock :refer [game-time-str]]
     [foosball-score.util :refer [teams]]
-    [foosball-score.colors :refer [colors]]
+    [foosball-score.colors :refer [get-colors colors]]
     [foosball-score.state :refer [game-over? who-is-winning]]))
 
 ;; --------------------------------
@@ -43,7 +43,7 @@
 (defn scoreboard-content
   "A team's scoreboard content"
   [state team align]
-  (let [color (team colors)
+  (let [color (team (get-colors state))
         scores (:scores state)]
     [:div.scorecard {:class (scorecard-class state team)}
       [:h6 {:style {:color color :text-align align}}
