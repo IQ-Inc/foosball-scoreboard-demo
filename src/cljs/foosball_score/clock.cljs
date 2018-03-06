@@ -55,5 +55,6 @@
   "The game clock"
   [state]
   [:div.gameclock.scoreboard {:class (game-clock-class state) :style (game-clock-style state)}
-    [:h2 (game-time-str (time-repr state))]])
+    [:h2 (game-time-str (time-repr state))]
+    [:p {:style {:font-size "0.4em"}} (game-time-str (:overtime state))]])
   
