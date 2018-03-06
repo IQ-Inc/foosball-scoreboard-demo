@@ -239,22 +239,23 @@
     (is (nil? (state/event->state
                 (assoc-in state/new-state [:scores :black] 5) :drop))))
 
-  (testing "Game is frozen when in overtime"
+  (testing "Game increments overtime counter when in overtime"
     (let [state (-> state/new-state
                     (assoc :status :playing)
                     (assoc :game-mode :timed-ot)
                     (assoc :time (:end-time state/new-state)))]
-      (is (= state (state/event->state state :tick)))))
+      (is (= (update state :overtime inc) (state/event->state state :tick)))))
 
   (testing "Score increments from overtime"
     (let [state (-> state/new-state
                     (assoc :status :playing)
                     (assoc :game-mode :timed-ot)
+                    (assoc :overtime 5)
                     (assoc :time (:end-time state/new-state)))]
       (is (= (-> state
                  (update-in [:scores :black] inc)
                  (assoc :status :black)
-                 (update :score-times conj {:time (:end-time state/new-state) :team :black}))
+                 (update :score-times conj {:time (+ 5 (:end-time state/new-state)) :team :black}))
              (state/event->state state :black)))))
 
   (testing "Time increments when in a timed game"
