@@ -39,7 +39,8 @@
 
 (def new-time-state
   {:time 0 :score-times []
-   :end-time 120})
+   :end-time 120
+   :overtime 0})
 
 ;;;;;;;;;;;;
 ;; New state
@@ -204,8 +205,8 @@
 
 (defn- update-score-times
   "Adds a score time for the provided team"
-  [{:keys [status time] :as state} team]
-  (update state :score-times conj {:time time :team team}))
+  [{:keys [status time overtime] :as state} team]
+  (update state :score-times conj {:time (+ time overtime) :team team}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Config state modifiers
@@ -259,9 +260,9 @@
 (defmethod event->state :tick
   [{:keys [status game-mode] :as state} _]
   (when (= status :playing)
-    (if (not (overtime? state))
-        (update state :time inc)
-        state)))
+    (if (overtime? state)
+        (update state :overtime inc)
+        (update state :time inc))))
 
 ;; Drop ball
 (defmethod event->state :drop
