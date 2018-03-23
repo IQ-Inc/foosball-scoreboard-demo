@@ -55,6 +55,14 @@ p, h1, h2, h3, h4, h5, h6 {
   margin-bottom: 100px;
 }
 
+@media (max-width: 800px) {
+  .scorecard {
+    font-size: 3.2em;
+    height: 1em;
+    width: 2em;
+  }
+}
+
 .scorelist {
   width: 200px;
   height: 150px;
@@ -64,6 +72,13 @@ p, h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
+@media (max-width: 800px) {
+  .scorelist {
+    font-size: 1em;
+    line-height: 1.3em;
+  }
+}
+
 .gameclock {
   font-family: 'DSEG7-Modern', monospace;
   color: #777;
@@ -71,11 +86,24 @@ p, h1, h2, h3, h4, h5, h6 {
   margin-bottom: 50px;
 }
 
+@media (max-width: 800px) {
+  .gameclock {
+    font-size: 2em;
+    margin-bottom: 30px;
+  }
+}
+
 .status {
   font-family: 'Inconsolata', monospace;
   color: #777;
   font-size: 1.5em;
   margin-top: 40px;
+}
+
+@media (max-width: 800px) {
+  .status {
+    font-size: 0.8em;
+  }
 }
 
 .button {
@@ -95,6 +123,13 @@ p, h1, h2, h3, h4, h5, h6 {
   justify-content: space-around;
   font-size: 2em;
   margin-top: 50px;
+}
+
+@media (max-width: 800px) {
+  .playerlist {
+    font-size: 1em;
+    margin-top: 25px;
+  }
 }
 
 .player {
