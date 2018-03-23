@@ -11,6 +11,7 @@
    [foosball-score.colors :as colors]
    [foosball-score.deltapatch :refer [delta patch]]
    [foosball-score.game :as game]
+   [foosball-score.click :as click]
    [foosball-score.clock :as clock]
    [foosball-score.keypress :refer [keypress-handler]]
    [foosball-score.modes :as modes]
@@ -55,6 +56,12 @@
                                         (.-charCode chr)))]
     (notify-server handled)))
 
+(defn- mode-click-handlers
+  [state]
+  {:up   #(notify-server (click/increase-setting state))
+   :down #(notify-server (click/decrease-setting state))
+   :mode #(notify-server (click/change-mode state))})
+
 ;; -------------------------
 ;; Main UI manipulation
 (defonce flash (atom false))
@@ -76,8 +83,8 @@
 (defn home-page [state]
   [:div {:tab-index "1" :style (flash-effect state @flash)
          :on-key-press (partial on-key-press! state)}
-   [modes/game-modes state]
-   [clock/game-clock state]
+   [modes/game-modes state (mode-click-handlers state)]
+   [clock/game-clock state #(notify-server (click/new-game state))]
    [game/scoreboard (game/state-depends state) :black :gold]
    [status/status-msg state]
    [players/player-list (players/state-depends state) (swap-team! state)]])
