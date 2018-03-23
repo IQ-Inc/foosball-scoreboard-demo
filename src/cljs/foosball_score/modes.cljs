@@ -33,8 +33,9 @@
 
 (defn- right-mode-display
   "Show the game mode"
-  [game-mode max-score]
-  [:div ((mode->str game-mode) max-score)])
+  [game-mode max-score on-click]
+  [:div {:on-click on-click}
+    ((mode->str game-mode) max-score)])
 
 (defn- game-mode-style
   "Returns a style depending on the state"
@@ -43,7 +44,9 @@
     {:style {:background-color colors/overtime-accent}}))
 
 (defn game-modes
-  [{:keys [game-mode end-time] {:keys [max-score]} :scores :as state}]
+  [{:keys [game-mode end-time] {:keys [max-score]} :scores :as state} {:keys [mode up down]}]
   [:div.game-modes (game-mode-style state)
+    [:div {:on-click down} "-"]
     [left-mode-display game-mode max-score end-time]
-    [right-mode-display game-mode max-score]])
+    [:div {:on-click up} "+"]
+    [right-mode-display game-mode max-score mode]])
