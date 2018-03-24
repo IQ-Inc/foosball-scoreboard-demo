@@ -98,7 +98,7 @@
 ;; -------------------------
 ;; Routes
 
-(def page (atom #'error-page))
+(def page (atom #'home-page))
 
 (defn current-page []
   [:div [@page @state/state]])
@@ -112,10 +112,17 @@
 ;; -------------------------
 ;; Initialize app
 
+(defn- ws-connection-callback
+  [_ _ _ connected?]
+  (if connected?
+    (secretary/dispatch! "/")
+    (secretary/dispatch! "/err")))
+
 (defn mount-root []
   (do
-    (reagent/render [current-page] (.getElementById js/document "app")))
-  (sente/start-client-chsk-router! ch-chsk socket/websocket-event))
+    (reagent/render [current-page] (.getElementById js/document "app"))
+    (sente/start-client-chsk-router! ch-chsk socket/websocket-event)
+    (add-watch socket/websocket-connected? :wserr ws-connection-callback)))
 
 (defn init! []
   (accountant/configure-navigation!
