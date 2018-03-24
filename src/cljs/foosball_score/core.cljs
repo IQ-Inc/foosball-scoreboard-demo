@@ -89,16 +89,25 @@
    [status/status-msg state]
    [players/player-list (players/state-depends state) (swap-team! state)]])
 
+(defn error-page [_]
+  [:div {:class "ws-error"}
+    [:h1 ":("]
+    [:div "Your Foosball table ran into a problem and needs to restart. We're just collecting some error info,
+    and then we'll restart for you."]])
+
 ;; -------------------------
 ;; Routes
 
-(def page (atom #'home-page))
+(def page (atom #'error-page))
 
 (defn current-page []
   [:div [@page @state/state]])
 
 (secretary/defroute "/" []
   (reset! page #'home-page))
+
+(secretary/defroute "/err" []
+  (reset! page #'error-page))
 
 ;; -------------------------
 ;; Initialize app

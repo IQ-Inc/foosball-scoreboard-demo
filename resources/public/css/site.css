@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Inconsolata');
 @import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
 
 .body-container {
   font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, monospace;
@@ -162,4 +163,11 @@ p, h1, h2, h3, h4, h5, h6 {
   to {
     visibility: hidden;
   }
+}
+
+.ws-error {
+  font-family: 'Montserrat', sans-serif;
+  margin-left: 100px;
+  margin-right: 100px;
+  font-size: 1.5em;
 }

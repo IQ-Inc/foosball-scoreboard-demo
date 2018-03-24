@@ -45,6 +45,7 @@
 
 (defroutes routes
   (GET "/" [] (loading-page))
+  (GET "/err" [] (loading-page))
   (GET  ws-url req (ring-ajax-get-or-ws-handshake req))
   (POST ws-url req (ring-ajax-post                req))
   (resources "/")
