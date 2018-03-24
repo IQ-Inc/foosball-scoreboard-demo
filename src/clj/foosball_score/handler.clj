@@ -70,11 +70,11 @@
 
 (defmulti foosball-event
   "Handle foosball-specific events"
-  :event)
+  (fn [event _] (:event event)))
 
 (defmethod websocket-event :foosball/v0
   [event]
-  (foosball-event (get-in event [:event 1])))
+  (foosball-event (get-in event [:event 1]) (:?reply-fn event)))
 
 (defmethod websocket-event :default
   [event]

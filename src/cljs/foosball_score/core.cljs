@@ -38,6 +38,11 @@
   [state]
   (chsk-send! [:foosball/v0 (delta @state/state state)]))
 
+(defn- reset-state!
+  []
+  (chsk-send! [:foosball/v0 {:event :reset}] 750
+    (fn [state] (state/update-state! state))))
+
 (defn- swap-team!
   "Accepts the state, then returns a function that will swap the team players
   based on that state"
@@ -115,7 +120,7 @@
 (defn- ws-connection-callback
   [_ _ _ connected?]
   (if connected?
-    (secretary/dispatch! "/")
+    (do (secretary/dispatch! "/") (reset-state!))
     (secretary/dispatch! "/err")))
 
 (defn mount-root []

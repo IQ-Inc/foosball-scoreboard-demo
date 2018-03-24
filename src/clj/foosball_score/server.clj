@@ -16,9 +16,14 @@
   (:gen-class :main true))
 
 (defmethod foosball-event :default
-  [event]
+  [event _]
   (state/update-state! (patch @state/state event))
   (push-event! event))
+
+(defmethod foosball-event :reset
+  [event ?reply-fn]
+  (when ?reply-fn
+    (?reply-fn @state/state)))
 
 (defn- persist-using!
   "Handles persistence of winners or losers using the provided persistence
