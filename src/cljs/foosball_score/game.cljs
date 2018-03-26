@@ -34,11 +34,11 @@
                         (drop (- total 9) all-score-times)
                         all-score-times)]
     [:div.scorelist
-      (for [item score-times] ^{:key item}
+      (for [item score-times]
         (let [time (game-time-str (item :time))
               team (item :team)
               color (team colors)]
-          [:div {:style {:color color}} time]))]))
+          ^{:key (str time team color)} [:div {:style {:color color}} time]))]))
 
 (defn scoreboard-content
   "A team's scoreboard content"
