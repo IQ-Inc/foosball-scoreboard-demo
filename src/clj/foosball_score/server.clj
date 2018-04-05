@@ -57,6 +57,8 @@
                            (persist-using! :winners persist/win-for!)
                            (persist-using! :losers persist/loss-for!)
                            (persist-using! :tiers persist/tie-for!))]
+        (if (state/game-over? next-state)
+          (post-slack-msg! (slack/game-outcome next-state)))
         (push-event! (delta state next-state))
         (state/update-state! next-state)))))
 

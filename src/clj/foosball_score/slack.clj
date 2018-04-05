@@ -21,10 +21,10 @@
   "Build a Slack incoming webhooks client that interfaces with the provided URL.
   Returns a map with the following functions identified by keyword:
   
-  - :post-msg! => accepts msg, a simple text message."
+  - :post-msg! => accepts msg, a simple text message"
   [url]
   (if (nil? url)
-    {:post-msg! (fn [_] (println "Attempt to call slack/post-msg! with a nil URL"))}
+    {:post-msg! (fn [msg] (println "\n---\nSlack (nil URL): " msg "\n---\n"))}
     {:post-msg! (partial post-msg! url)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
