@@ -9,11 +9,22 @@
     [foosball-score.state :as state]
     [foosball-score.tcp :as tcp]
     [foosball-score.tick :as tick]
+    [foosball-score.slack :as slack]
     [foosball-score.statistics :as statistics]
     [foosball-score.persistence :as persist]
     [config.core :refer [env]]
     [org.httpkit.server :refer [run-server]])
   (:gen-class :main true))
+
+;;;;;;;;;;;;;;;;;
+;; Slack handling
+;;;;;;;;;;;;;;;;;
+(let [{:keys [post-msg!]} (slack/build-client (env :slack))]
+  (def post-slack-msg! post-msg!))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Foosball event responses
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod foosball-event :default
   [event _]
@@ -46,6 +57,8 @@
                            (persist-using! :winners persist/win-for!)
                            (persist-using! :losers persist/loss-for!)
                            (persist-using! :tiers persist/tie-for!))]
+        (if (state/game-over? next-state)
+          (post-slack-msg! (slack/game-outcome next-state)))
         (push-event! (delta state next-state))
         (state/update-state! next-state)))))
 

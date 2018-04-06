@@ -27,7 +27,8 @@
                  [com.taoensso/sente "1.11.0"]
                  [http-kit "2.2.0"]
                  [clj-serial "2.0.4-SNAPSHOT"]
-                 [clj-tcp "1.0.1"]]
+                 [clj-tcp "1.0.1"]
+                 [clj-http "3.8.0"]]
 
   :plugins [[lein-environ "1.0.2"]
             [lein-cljsbuild "1.1.5"]

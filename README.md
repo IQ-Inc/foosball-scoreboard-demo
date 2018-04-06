@@ -24,6 +24,8 @@ $ # Connect directly to a serial device (specify device)
 $ java -jar foosball-scoreboard.jar serial /dev/[your-serial-device]
 $ # Connect to a TCP device that mimics the serial device (specify port)
 $ java -jar foosball-scoreboard.jar tcp 3667
+$ # Set a Slack incoming webhook channel
+$ java -DSLACK="https://hooks.slack.com/services/YOUR_INCOMING_WEBHOOK" -jar foosball-scoreboard.jar tcp 3667
 ```
 
 The program starts a webserver and app accessible at
