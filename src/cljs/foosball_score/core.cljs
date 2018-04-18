@@ -53,6 +53,10 @@
   [event]
   (state/update-state! (patch @state/state (:event event))))
 
+(defmethod socket/foosball-event :debug
+  [event]
+  (println event))
+
 (defn- on-key-press!
   "Maps a character chr to a keypress handler, forwarding through the state."
   [state chr]

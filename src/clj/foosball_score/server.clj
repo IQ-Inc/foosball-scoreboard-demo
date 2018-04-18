@@ -36,6 +36,11 @@
   (when ?reply-fn
     (?reply-fn @state/state)))
 
+;; Ignore client -> server debug events
+(defmethod foosball-event :debug
+  [_ _]
+  nil)
+
 (defn- persist-using!
   "Handles persistence of winners or losers using the provided persistence
   method. Returns the state with the winners / losers stripped out of the state"
