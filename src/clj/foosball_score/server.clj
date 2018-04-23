@@ -88,7 +88,7 @@
     (listen-on-port parsed-arg)
     (add-subscriber
       (events/make-event-handler!
-        event-state-handler))
+        event-state-handler #(push-event! {:debug %})))
     (run-server app {:port port :join? false})
     (listen-for-ws)
     (tick/call-every-ms every-second 1000)))

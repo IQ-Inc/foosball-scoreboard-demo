@@ -9,6 +9,8 @@
     [clojure.core.async :refer [go go-loop chan <! >!]]
     [foosball-score.persistence :as persist]))
 
+(def ^:private debug-callback! (atom (fn [_] nil)))
+
 (def event-lookup
   { "BD" :drop        ; black drop - not specified as a unique event
     "GD" :drop        ; gold drop - not specified as a unique event
@@ -36,17 +38,20 @@
 
 ;; Anything else is not handled
 (defmethod on-msg-size :default
-  [_]
-  nil)
+  [msg]
+  (let [debug! @debug-callback!]
+    (debug! (str "Received and dropped unexpected message of " msg))))
 
 (defn make-event-handler!
   "Create an event handler, and returns a channel that will be awaited on
   for serial events. Accepts a callback, a function to receive translated
   events."
-  [callback]
+  ([callback] (make-event-handler! callback (fn [_] nil)))
+  ([callback debug-cb]
+  (reset! debug-callback! debug-cb)
   (let [msg-chan (chan)]
     (go-loop [msg (<! msg-chan)]
       (if-let [event (on-msg-size msg)]
         (callback event))
       (recur (<! msg-chan)))
-    msg-chan))
+    msg-chan)))
