@@ -33,7 +33,10 @@
 
 (defmethod websocket-event :foosball/v0
   [event]
-  (foosball-event (get-in event [:?data 1])))
+  (let [event (get-in event [:?data 1])]
+    (if-let [debug-msg (get-in event [:event :debug])]
+      (foosball-event {:event :debug :debug debug-msg})
+      (foosball-event event))))
 
 (defmethod websocket-event :default
   [event]

@@ -150,6 +150,10 @@
   (and (not (nil? (who-is-winning state)))
        (game-over? (assoc state :game-mode :timed))))
 
+(defmethod game-over? :default
+  [state]
+  (println "Error handling a game-over? invocation with state of " state))
+
 (defn overtime?
   "Returns true if the game is in overtime, else false"
   [state]

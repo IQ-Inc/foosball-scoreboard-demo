@@ -22,6 +22,10 @@
    [foosball-score.state :as state]))
 
 ;; -------------------------
+;; Debugging support
+(defonce debug-msg (atom ""))
+
+;; -------------------------
 ;; Websocket setup
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! ws-url ; Path must match the server's path
@@ -52,6 +56,10 @@
 (defmethod socket/foosball-event :default
   [event]
   (state/update-state! (patch @state/state (:event event))))
+
+(defmethod socket/foosball-event :debug
+  [event]
+  (reset! debug-msg (:debug event)))
 
 (defn- on-key-press!
   "Maps a character chr to a keypress handler, forwarding through the state."
@@ -92,6 +100,7 @@
    [clock/game-clock state #(notify-server (click/new-game state))]
    [game/scoreboard (game/state-depends state) :black :gold]
    [status/status-msg state]
+   [:div.scoreboard.debug {:on-click #(reset! debug-msg "")} @debug-msg]
    [players/player-list (players/state-depends state) (swap-team! state)]])
 
 (defn error-page [_]

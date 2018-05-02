@@ -36,6 +36,11 @@
   (when ?reply-fn
     (?reply-fn @state/state)))
 
+;; Ignore client -> server debug events
+(defmethod foosball-event :debug
+  [_ _]
+  nil)
+
 (defn- persist-using!
   "Handles persistence of winners or losers using the provided persistence
   method. Returns the state with the winners / losers stripped out of the state"
@@ -83,7 +88,7 @@
     (listen-on-port parsed-arg)
     (add-subscriber
       (events/make-event-handler!
-        event-state-handler))
+        event-state-handler #(push-event! {:debug %})))
     (run-server app {:port port :join? false})
     (listen-for-ws)
     (tick/call-every-ms every-second 1000)))

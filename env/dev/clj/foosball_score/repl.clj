@@ -23,6 +23,11 @@
   [event]
   (println  "-- Event translation -- " event))
 
+(defn- debug-event!
+  "An auxilary debug handler for the event module"
+  [event]
+  (println "-- Debug msg -- " event))
+
 (defn get-handler []
   ;; #'app expands to (var app) so that when we reload our code,
   ;; the server is forced to re-resolve the symbol in the var
@@ -44,7 +49,7 @@
                     :auto-reload? true
                     :join? false}))
     (reset! event-chan
-            (make-event-handler! #(emit-event! (event-state-handler %))))
+            (make-event-handler! #(emit-event! (event-state-handler %)) debug-event!))
     (listen-for-ws)
     (call-every-ms every-second 1000)
     (println (str "You can view the site at http://localhost:" port))))
