@@ -296,6 +296,18 @@
 ;; Event -> state transitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; In a previous implementation, we did not differentiate
+;; between gold and black drops. In order to introduce
+;; the distinction, we would have to go through and update
+;; all the multimethods.
+;;
+;; The hierarchy instead allows us to define specialized
+;; drops that default to normal drops. If we want to
+;; specialize an action to a gold / black drop, we can
+;; easily do so by adding a new multimethod layer.
+;;
+;; This is literally so cool. Add new behaviors without
+;; changing the callers or callee.
 (def drop-hierarchy
   (-> (make-hierarchy)
       (derive :gold-drop :drop)
@@ -315,7 +327,7 @@
 
 (defmulti drop->state
   "Specialization of an event->state transformer for handling ball drops as a function
-  of game mode"
+  of game mode. Implementations shall return a state."
   (fn [state drop] [(:game-mode state) drop])
    :hierarchy #'drop-hierarchy)
 
@@ -342,12 +354,13 @@
 
 (defmethod drop->state [:multiball :drop]
   [{:keys [max-balls last-drop-team] :as state} drop]
-  (when (or (nil? last-drop-team)
-            (= (opposites last-drop-team) (drop->team drop)))
+  (if (or (nil? last-drop-team)
+          (= (opposites last-drop-team) (drop->team drop)))
     (let [state (-> state
                     (update :balls #(min (inc %) max-balls))
                     (assoc :last-drop-team (drop->team drop)))]
-        (into-playing state))))
+        (into-playing state))
+    state))
 
 ;; Implementation for black / gold goals
 (defn- goal->state

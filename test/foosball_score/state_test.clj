@@ -332,44 +332,59 @@
                      (state/event->state :black-drop))]
       (is (= expected actual))))
       
-  ; (testing "Three ball drops transition into playing"
-  ;   (let [state (-> state/new-state
-  ;                   (assoc :max-balls 3)
-  ;                   (assoc :game-mode :multiball))
-  ;         expected (-> state
-  ;                      (assoc :balls 3)
-  ;                      (assoc :status :playing))
-  ;         actual (nth (iterate #(state/event->state % :drop) state) 3)]
-  ;     (is (= expected actual))))
+  (testing "Three ball drops transition into playing"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball))
+          expected (-> state
+                       (assoc :balls 3)
+                       (assoc :last-drop-team :gold)
+                       (assoc :status :playing))
+          actual (-> state
+                     (state/event->state :gold-drop)
+                     (state/event->state :black-drop)
+                     (state/event->state :gold-drop))]
+      (is (= expected actual))))
 
-  ; (testing "Goal decrements ball count but not status"
-  ;   (let [state (-> state/new-state
-  ;                   (assoc :max-balls 3)
-  ;                   (assoc :game-mode :multiball)
-  ;                   (assoc :balls 3)
-  ;                   (assoc :status :playing))
-  ;         actual (state/event->state state :black)]
-  ;     (is (= :playing (:status actual)))
-  ;     (is (= 2 (:balls actual)))))
+  (testing "Three ball that don't alternate don't start a game"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball))
+          expected (-> state
+                       (assoc :balls 2)
+                       (assoc :last-drop-team :black))
+          actual (-> state
+                     (state/event->state :gold-drop)
+                     (state/event->state :gold-drop)
+                     (state/event->state :black-drop))]
+      (is (= expected actual))))
+
+  (testing "Goal decrements ball count but not status"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball)
+                    (assoc :balls 3)
+                    (assoc :status :playing))
+          actual (state/event->state state :black)]
+      (is (= :playing (:status actual)))
+      (is (= 2 (:balls actual)))))
       
-  ; (testing "Final goal chooses the last person who scored"
-  ;   (let [state (-> state/new-state
-  ;                   (assoc :max-balls 3)
-  ;                   (assoc :game-mode :multiball)
-  ;                   (assoc :balls 1)
-  ;                   (assoc :status :playing))
-  ;         actual (state/event->state state :black)]
-  ;     (is (= :black (:status actual)))
-  ;     (is (= 0 (:balls actual)))))
+  (testing "Final goal chooses the last person who scored"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball)
+                    (assoc :balls 1)
+                    (assoc :status :playing))
+          actual (state/event->state state :black)]
+      (is (= :black (:status actual)))
+      (is (= 0 (:balls actual)))))
       
-  ; (testing "Game is over when score sum is the number of balls"
-  ;   (let [state (-> state/new-state
-  ;                   (assoc :max-balls 3)
-  ;                   (assoc :balls 0)
-  ;                   (assoc :game-mode :multiball)
-  ;                   (update-in [:scores :black] inc)
-  ;                   (assoc-in [:scores :gold] 2))]
-  ;     (is (state/game-over? state))
-  ;     (is (not (state/game-over? (update-in state [:scores :gold] dec))))))
-      
-  )
+  (testing "Game is over when score sum is the number of balls"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :balls 0)
+                    (assoc :game-mode :multiball)
+                    (update-in [:scores :black] inc)
+                    (assoc-in [:scores :gold] 2))]
+      (is (state/game-over? state))
+      (is (not (state/game-over? (update-in state [:scores :gold] dec)))))))
