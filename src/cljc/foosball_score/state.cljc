@@ -7,7 +7,8 @@
   {:author "Ian McIntyre"}
   (:require
     #?(:cljs [reagent.core :refer [atom]])
-    [clojure.data :refer [diff]]))
+    [clojure.data :refer [diff]]
+    [foosball-score.util :refer [opposites]]))
 
 ;;;;;;;;;;;;;
 ;; Game state
@@ -48,7 +49,8 @@
 
 (def new-ball-state
   {:balls 0
-   :max-balls 3})
+   :max-balls 3
+   :last-drop-team nil})
 
 ;;;;;;;;;;;;
 ;; New state
@@ -294,17 +296,28 @@
 ;; Event -> state transitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def drop-hierarchy
+  (-> (make-hierarchy)
+      (derive :gold-drop :drop)
+      (derive :black-drop :drop)))
+
+(def drop->team
+  {:gold-drop :gold
+   :black-drop :black})
+
 (defmulti event->state
   "Defines transitions into new states based on events. If the game is over,
   no custom event is dispatched, and the return is nil. Implementers shall
   either return a new state, or nil if there is no update."
   (fn [state event]
-    (if (game-over? state) nil event)))
+    (if (game-over? state) nil event))
+  :hierarchy #'drop-hierarchy)
 
 (defmulti drop->state
   "Specialization of an event->state transformer for handling ball drops as a function
   of game mode"
-  :game-mode)
+  (fn [state drop] [(:game-mode state) drop])
+   :hierarchy #'drop-hierarchy)
 
 ;; Clock ticks
 (defmethod event->state :tick
@@ -315,8 +328,8 @@
         (update state :time inc))))
 
 (defmethod event->state :drop
-  [state _]
-  (drop->state state))
+  [state drop]
+  (drop->state state drop))
 
 ;; Drop ball
 (defn- into-playing
@@ -324,13 +337,17 @@
   (when (not (= status :playing)) (change-status state :playing)))
 
 (defmethod drop->state :default
-  [state]
+  [state drop]
   (into-playing state))
 
-(defmethod drop->state :multiball
-  [{:keys [max-balls] :as state}]
-  (let [state (update state :balls #(min (inc %) max-balls))]
-      (into-playing state)))
+(defmethod drop->state [:multiball :drop]
+  [{:keys [max-balls last-drop-team] :as state} drop]
+  (when (or (nil? last-drop-team)
+            (= (opposites last-drop-team) (drop->team drop)))
+    (let [state (-> state
+                    (update :balls #(min (inc %) max-balls))
+                    (assoc :last-drop-team (drop->team drop)))]
+        (into-playing state))))
 
 ;; Implementation for black / gold goals
 (defn- goal->state
