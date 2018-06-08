@@ -42,6 +42,14 @@
    :end-time 120
    :overtime 0})
 
+;;;;;;;;;;;;;
+;; Ball state
+;;;;;;;;;;;;;
+
+(def new-ball-state
+  {:balls 0
+   :max-balls 3})
+
 ;;;;;;;;;;;;
 ;; New state
 ;;;;;;;;;;;;
@@ -50,7 +58,8 @@
   (merge {} new-game-state
             new-team-state
             new-score-state
-            new-time-state))
+            new-time-state
+            new-ball-state))
 
 (defmulti new-game
   "Returns a new game state based on the current state"
@@ -60,11 +69,13 @@
   [state]
   (let [max-score (get-in state [:scores :max-score])
         game-mode (get state :game-mode)
-        end-time  (get state :end-time)]
+        end-time  (get state :end-time)
+        max-balls (get state :max-balls)]
     (-> new-state
         (assoc-in [:scores :max-score] max-score)
         (assoc :game-mode game-mode)
-        (assoc :end-time end-time))))
+        (assoc :end-time end-time)
+        (assoc :max-balls max-balls))))
 
 ;; Application state
 ;; components are defined below.
@@ -100,7 +111,12 @@
   (partial next-transition all-positions))
 
 (def next-game-mode-transition
-  (partial next-transition [:first-to-max :win-by-two :timed :timed-ot]))
+  (partial next-transition
+    [:first-to-max
+     :win-by-two
+     :timed
+     :timed-ot
+     :multiball]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; State consumers
@@ -150,6 +166,12 @@
   (and (not (nil? (who-is-winning state)))
        (game-over? (assoc state :game-mode :timed))))
 
+(defmethod game-over? :multiball
+  [{:keys [scores] :as state}]
+  (let [gold (:gold scores)
+        black (:black scores)]
+    (>= (+ gold black) (:max-balls state))))
+
 (defmethod game-over? :default
   [state]
   (println "Error handling a game-over? invocation with state of " state))
@@ -176,11 +198,26 @@
         defense (-> state :teams team :defense)]
     (assoc-in state [:teams team] {:offense defense :defense offense})))
 
-(defn change-status
-  "Change the status of the state if the status is valid"
+(defn- change-status-dispatch
   [state status]
   {:pre [(some #{status} [:waiting :playing :black :gold])]}
+  (:game-mode state))
+
+(defmulti change-status change-status-dispatch)
+
+(defmethod change-status :default
+  [state status]
   (assoc state :status status))
+
+(defmethod change-status :multiball
+  [{old :status balls :balls max-balls :max-balls :as state} new]
+  (let [new-state (assoc state :status new)]
+    (case [old new]
+      ([:playing :black] [:playing :gold])
+        (if (= 0 balls) new-state state)
+      [:waiting :playing]
+        (if (>= balls max-balls) new-state state)
+      new-state)))
 
 (defn- signed-in-players
   "Returns the signed in players in a map of names to positions"
@@ -219,6 +256,10 @@
 (let [limiter (fn [f minimum]
                 (fn [v]
                   (if (> (f v) (dec minimum)) (f v) minimum)))]
+  (defn- ball-count-limiter
+    "Defines ball count limiting"
+    [func]
+    (limiter func 1))
   (defn- max-score-limiter
     "Defines flooring logic for max-score modifications"
     [func]
@@ -260,6 +301,11 @@
   (fn [state event]
     (if (game-over? state) nil event)))
 
+(defmulti drop->state
+  "Specialization of an event->state transformer for handling ball drops as a function
+  of game mode"
+  :game-mode)
+
 ;; Clock ticks
 (defmethod event->state :tick
   [{:keys [status game-mode] :as state} _]
@@ -268,19 +314,33 @@
         (update state :overtime inc)
         (update state :time inc))))
 
-;; Drop ball
 (defmethod event->state :drop
-  [{:keys [status] :as state} _]
-  (if (not (= status :playing)) (change-status state :playing)))
+  [state _]
+  (drop->state state))
+
+;; Drop ball
+(defn- into-playing
+  [{:keys [status] :as state}]
+  (when (not (= status :playing)) (change-status state :playing)))
+
+(defmethod drop->state :default
+  [state]
+  (into-playing state))
+
+(defmethod drop->state :multiball
+  [{:keys [max-balls] :as state}]
+  (let [state (update state :balls #(min (inc %) max-balls))]
+      (into-playing state)))
 
 ;; Implementation for black / gold goals
 (defn- goal->state
   [{:keys [status] :as state} team]
-  (if (= status :playing)
-    (let [state (point-for state team)]
-      (-> state
-          (change-status team)
-          (update-score-times team)))))
+  (when (= status :playing)
+    (-> state
+        (point-for team)
+        (update :balls #(max (dec %) 0))
+        (change-status team)
+        (update-score-times team))))
 
 ;; Black goal
 (defmethod event->state :black
