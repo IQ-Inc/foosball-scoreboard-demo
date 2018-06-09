@@ -25,6 +25,10 @@
   [state direction]
   (state/update-max-score state direction))
 
+(defmethod handle-up-down :multiball
+  [state direction]
+  (state/update-max-ball state direction))
+
 (defmethod handle-up-down :timed
   [state direction]
   (let [lookup {inc state/increment-end-time

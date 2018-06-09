@@ -277,6 +277,12 @@
   {:pre [(some #{direction} [inc dec])]}
   (update-in state [:scores :max-score] (max-score-limiter direction)))
 
+(defn update-max-ball
+  "Update the maximum ball count"
+  [state direction]
+  {:pre [(some #{direction} [inc dec])]}
+  (update state :max-balls (ball-count-limiter direction)))
+
 (defn- update-end-time
   "Updates the end time"
   [state direction]
