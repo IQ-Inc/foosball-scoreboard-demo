@@ -51,7 +51,7 @@
     (str "GAME OVER: " (get lookup winner))))
 
 (defn- get-status
-  [{:keys [status last-drop-team balls] :as state}]
+  [{:keys [status last-drop-team balls max-balls] :as state}]
   (string/upper-case (cond
     (state/game-over? state) (game-over-msg (state/who-is-winning state))
     (state/overtime? state) "overtime: next goal wins"
@@ -59,7 +59,7 @@
          (= :waiting status)
          last-drop-team)
       (let [opposite-team (opposites last-drop-team)]
-        (str (name opposite-team) " drops the next ball"))
+        (str (name opposite-team) " drops the next ball (" (- max-balls balls) " left)"))
     :else (let [msg-fn (status status-messages)]
             (msg-fn status)))))
 
