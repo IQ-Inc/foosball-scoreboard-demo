@@ -185,6 +185,27 @@
        (game-over? (assoc state :game-mode :timed))
        (nil? (who-is-winning state))))
 
+(defmulti mode-in-progress?
+  "Returns true if, given the game mode, the game is in progress."
+  :game-mode)
+
+(defmethod mode-in-progress? :default
+  [{:keys [time]}]
+  (> time 0))
+
+(defn in-progress?
+  "Returns true if the game has started, else false. in-progress? is a function of the
+  game mode.
+  
+  'In progress' means that a game has started, but we could be playing or waiting.
+  Like some of the other consumers, the value is a function of the provided state
+  information, rather than a separate state entity."
+  [state]
+  (reduce #(and %1 %2) true
+          (map #(% state) [(comp not game-over?)
+                           (comp not overtime?)
+                           mode-in-progress?])))
+
 (defn point-for
   "Returns a state with a point added for team, or the current state if
   it is inappropriate to update the team's score"
@@ -297,6 +318,15 @@
   "Decrement the end time"
   [state]
   (update-end-time state #(- % 15)))
+
+(defn play-pause
+  "Sets the state to either playing or waiting, if the game is in progress. May be
+  used to implement a pause / play button."
+  [{:keys [status] :as state}]
+  (if (in-progress? state)
+    (let [mapping {:playing :waiting :waiting :playing}]
+      (assoc state :status (mapping status)))
+    state))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Event -> state transitions

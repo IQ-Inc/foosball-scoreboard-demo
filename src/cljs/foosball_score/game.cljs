@@ -53,18 +53,18 @@
 
 (defn scoreboard-content
   "A team's scoreboard content"
-  [state team align]
+  [state team align on-click]
   (let [color (team (get-colors state))
         scores (:scores state)]
-    [:div.scorecard {:class (scorecard-class state team) :style {:visibility (hidden-element state team)}}
+    [:div.scorecard {:on-click on-click :class (scorecard-class state team) :style {:visibility (hidden-element state team)}}
       [:h6 {:style {:color color :text-align align :visibility (hidden-element state team)}}
            (string/upper-case (name team))]
       [:h1 {:style {:color color :text-align align} :visibility (hidden-element state team)} (team scores)]]))
 
 (defn scoreboard
   "Create the game's scoreboard"
-  [state left right]
+  [state left right on-click]
   [:div.scoreboard
-    [scoreboard-content state left :right]
+    [scoreboard-content state left :right on-click]
     [score-time-list (:score-times state)]
-    [scoreboard-content state right :left]])
+    [scoreboard-content state right :left on-click]])

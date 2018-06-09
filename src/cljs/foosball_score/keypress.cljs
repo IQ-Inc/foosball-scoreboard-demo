@@ -17,6 +17,10 @@
   [state _]
   (state/swap-players state :gold))
 
+(defmethod keypress-handler \p
+  [state _]
+  (state/play-pause state))
+
 (defmulti handle-up-down
   "Update the state in the provided direction"
   (fn [{:keys [game-mode]} direction] game-mode))
