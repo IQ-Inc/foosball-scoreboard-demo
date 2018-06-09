@@ -5,6 +5,7 @@
   (:require
     [foosball-score.state :as state]
     [foosball-score.colors :refer [get-colors]]
+    [foosball-score.util :refer [opposites]]
     [clojure.string :as string]))
 
 ;; --------------------------------
@@ -50,18 +51,22 @@
     (str "GAME OVER: " (get lookup winner))))
 
 (defn- get-status
-  "Get the current status message"
-  [{:keys [status] :as state}]
-  (cond
+  [{:keys [status last-drop-team balls] :as state}]
+  (string/upper-case (cond
     (state/game-over? state) (game-over-msg (state/who-is-winning state))
-    (state/overtime? state) "OVERTIME: NEXT GOAL WINS"
+    (state/overtime? state) "overtime: next goal wins"
+    (and (> balls 0)
+         (= :waiting status)
+         last-drop-team)
+      (let [opposite-team (opposites last-drop-team)]
+        (str (name opposite-team) " drops the next ball"))
     :else (let [msg-fn (status status-messages)]
-            (string/upper-case (msg-fn status)))))
+            (msg-fn status)))))
 
 (defn- status-style
-  "Get the corresponding status style"
   [{:keys [status] :as state}]
-  (if (or (state/game-over? state) (state/overtime? state))
+  (if (or (state/game-over? state)
+          (state/overtime? state))
     (hash-map :color ((get-colors state) (state/who-is-winning state)))
     (hash-map :color (status (get-colors state)))))
 
