@@ -180,12 +180,12 @@
 (deftest event-state-transition-test
   (testing "Drop ball transitions to playing"
     (let [expected (assoc state/new-state :status :playing)]
-      (is (= expected (state/event->state state/new-state :drop)))))
+      (is (= expected (state/event->state state/new-state :gold-drop)))))
 
   (testing "Double-drop does nothing and returns nil for no update"
     (let [actual (-> state/new-state
-                     (state/event->state :drop)
-                     (state/event->state :drop))]
+                     (state/event->state :gold-drop)
+                     (state/event->state :black-drop))]
       (is (nil? actual))))
 
   (testing "No goals when not in playing state"
@@ -218,7 +218,7 @@
       (is (= expected (state/event->state input :tick)))))
 
   (testing "Time does not increment for any other status"
-    (doseq [status [:waiting :drop :black :gold]]
+    (doseq [status [:waiting :gold-drop :black-drop :black :gold]]
       (let [input (assoc state/new-state :status status)]
         (is (nil? (state/event->state input :tick))))))
 
@@ -237,7 +237,7 @@
 
   (testing "Game over state has no update"
     (is (nil? (state/event->state
-                (assoc-in state/new-state [:scores :black] 5) :drop))))
+                (assoc-in state/new-state [:scores :black] 5) :black-drop))))
 
   (testing "Game increments overtime counter when in overtime"
     (let [state (-> state/new-state
@@ -318,3 +318,73 @@
   (testing "Increments end-time indefinitely by multiples of 15"
     (let [actual (nth (iterate state/increment-end-time {:end-time 30}) 100)]
       (is (= {:end-time 1530} actual)))))
+
+(deftest multiball-game
+  (testing "Two ball drops do not start game when three are needed"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball))
+          expected (-> state
+                       (assoc :balls 2)
+                       (assoc :last-drop-team :black))
+          actual (-> state
+                     (state/event->state :gold-drop)
+                     (state/event->state :black-drop))]
+      (is (= expected actual))))
+      
+  (testing "Three ball drops transition into playing"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball))
+          expected (-> state
+                       (assoc :balls 3)
+                       (assoc :last-drop-team :gold)
+                       (assoc :status :playing))
+          actual (-> state
+                     (state/event->state :gold-drop)
+                     (state/event->state :black-drop)
+                     (state/event->state :gold-drop))]
+      (is (= expected actual))))
+
+  (testing "Three ball that don't alternate don't start a game"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball))
+          expected (-> state
+                       (assoc :balls 2)
+                       (assoc :last-drop-team :black))
+          actual (-> state
+                     (state/event->state :gold-drop)
+                     (state/event->state :gold-drop)
+                     (state/event->state :black-drop))]
+      (is (= expected actual))))
+
+  (testing "Goal decrements ball count but not status"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball)
+                    (assoc :balls 3)
+                    (assoc :status :playing))
+          actual (state/event->state state :black)]
+      (is (= :playing (:status actual)))
+      (is (= 2 (:balls actual)))))
+      
+  (testing "Final goal chooses the last person who scored"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :game-mode :multiball)
+                    (assoc :balls 1)
+                    (assoc :status :playing))
+          actual (state/event->state state :black)]
+      (is (= :black (:status actual)))
+      (is (= 0 (:balls actual)))))
+      
+  (testing "Game is over when score sum is the number of balls"
+    (let [state (-> state/new-state
+                    (assoc :max-balls 3)
+                    (assoc :balls 0)
+                    (assoc :game-mode :multiball)
+                    (update-in [:scores :black] inc)
+                    (assoc-in [:scores :gold] 2))]
+      (is (state/game-over? state))
+      (is (not (state/game-over? (update-in state [:scores :gold] dec)))))))

@@ -12,8 +12,8 @@
 (def ^:private debug-callback! (atom (fn [_] nil)))
 
 (def event-lookup
-  { "BD" :drop        ; black drop - not specified as a unique event
-    "GD" :drop        ; gold drop - not specified as a unique event
+  { "BD" :black-drop  ; black drop
+    "GD" :gold-drop   ; gold drop
     "BG" :black       ; black goal
     "GG" :gold })     ; gold goal
 

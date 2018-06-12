@@ -5,6 +5,10 @@
 (def teams
   [:gold :black])
 
+(def opposites
+  {:black :gold
+   :gold :black})
+
 (defmacro const
   "Closure that captures x and returns it for any input argument."
   [x]

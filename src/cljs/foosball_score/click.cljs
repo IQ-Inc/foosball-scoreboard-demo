@@ -21,6 +21,11 @@
   [state]
   (keypress-handler state \j))
 
+(defn play-pause
+  "Press to play or pause the game"
+  [state]
+  (keypress-handler state \p))
+
 (defn new-game
   "Start a new game"
   [state]

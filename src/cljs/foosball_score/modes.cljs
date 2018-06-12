@@ -8,34 +8,38 @@
 
 (def mode->str
   {:win-by-two    (fn [_] "Win by two")
-   :first-to-max  (fn [n] (str "First to " n))
+   :first-to-max  (fn [{{:keys [max-score]} :scores}] (str "First to " max-score))
    :timed         (fn [_] "Timed game")
-   :timed-ot      (fn [_] "Timed game (overtime)")})
+   :timed-ot      (fn [_] "Timed game (overtime)")
+   :multiball     (fn [{:keys [balls]}] (str "Multiball (" balls ")"))})
 
 ;;;;;;;;;;;;;
 ;; Components
 ;;;;;;;;;;;;;
 
-(defmulti left-mode-display
-  (fn [game-mode max-score end-time] game-mode))
-
-(defmethod left-mode-display :default
-  [_ max-score _]
-  [:div (str "Max score: " max-score)])
+(defmulti left-mode-display :game-mode)
 
 (defmethod left-mode-display :timed
-  [_ _ end-time]
+  [{:keys [end-time]}]
   [:div (str "Duration: " (game-time-str end-time))])
 
 (defmethod left-mode-display :timed-ot
-  [game-mode max-score end-time]
-  (left-mode-display :timed max-score end-time))
+  [state]
+  (left-mode-display (assoc state :game-mode :timed)))
+
+(defmethod left-mode-display :multiball
+  [{:keys [max-balls]}]
+  [:div (str "Max balls: " max-balls)])
+
+(defmethod left-mode-display :default
+  [state]
+  [:div (str "Max score: " (get-in state [:scores :max-score]))])
 
 (defn- right-mode-display
   "Show the game mode"
-  [game-mode max-score on-click]
+  [{:keys [game-mode] :as state} on-click]
   [:div {:on-click on-click}
-    ((mode->str game-mode) max-score)])
+    ((mode->str game-mode) state)])
 
 (defn- game-mode-style
   "Returns a style depending on the state"
@@ -44,9 +48,9 @@
     {:style {:background-color colors/overtime-accent}}))
 
 (defn game-modes
-  [{:keys [game-mode end-time] {:keys [max-score]} :scores :as state} {:keys [mode up down]}]
+  [state {:keys [mode up down]}]
   [:div.game-modes (game-mode-style state)
     [:div {:on-click down} "-"]
-    [left-mode-display game-mode max-score end-time]
+    [left-mode-display state]
     [:div {:on-click up} "+"]
-    [right-mode-display game-mode max-score mode]])
+    [right-mode-display state mode]])
