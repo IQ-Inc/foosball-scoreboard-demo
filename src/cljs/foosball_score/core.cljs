@@ -98,7 +98,7 @@
          :on-key-press (partial on-key-press! state)}
    [modes/game-modes state (mode-click-handlers state)]
    [clock/game-clock state #(notify-server (click/new-game state))]
-   [game/scoreboard (game/state-depends state) :black :gold #(notify-server (click/play-pause state))]
+   [game/scoreboard state :black :gold #(notify-server (click/play-pause state))]
    [status/status-msg state]
    [:div.scoreboard.debug {:on-click #(reset! debug-msg "")} @debug-msg]
    [players/player-list (players/state-depends state) (swap-team! state)]])

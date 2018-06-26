@@ -11,12 +11,6 @@
 ;; --------------------------------
 ;; Functions
 
-(defn state-depends
-  "Describes the filtering of the state specific for this component"
-  [state]
-  state
-  #_(select-keys state [:scores :game-mode :score-times :time :end-time]))
-
 (defn- scorecard-class
   "Change the scorecards class"
   [state team]
@@ -39,7 +33,7 @@
         (let [time (game-time-str (item :time))
               team (item :team)
               color (team colors)]
-          ^{:key (str time team color)} [:div {:style {:color color}} time]))]))
+          ^{:key (gensym (str time team color))} [:div {:style {:color color}} time]))]))
 
 (defn- hidden-element
   "Returns :none if the element should be hidden, else nil"
