@@ -76,7 +76,7 @@
               state @state/state]   ; ...then immediately grab the current state, which may have changed
       (when-let [next-state (event-state-handler state event)]
         (if (state/game-over? next-state)
-            (post-slack-msg! (slack/game-outcome next-state)))
+            (go (post-slack-msg! (slack/game-outcome next-state))))
         (push-event! (delta state next-state))
         (state/update-state! next-state)
         (put! out [event next-state]))
