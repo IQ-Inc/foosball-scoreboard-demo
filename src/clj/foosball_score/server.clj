@@ -106,7 +106,7 @@
     (let [[event-chan _] (event-state-task!)]      
       (add-subscriber
         (events/make-event-handler!
-          #(put! event-chan %) #(push-event! {:debug %})))
+          event-chan #(push-event! {:debug %})))
       (run-server app {:port port :join? false})
       (listen-for-ws)
       (tick/call-every-ms #(every-second event-chan) 1000))))

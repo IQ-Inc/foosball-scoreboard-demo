@@ -6,7 +6,7 @@
   multi-character messages."
   {:author "Ian McIntyre"}
   (:require
-    [clojure.core.async :refer [go go-loop chan <! >!]]
+    [clojure.core.async :refer [go go-loop chan put! <! >!]]
     [foosball-score.persistence :as persist]))
 
 (def ^:private debug-callback! (atom (fn [_] nil)))
@@ -46,12 +46,12 @@
   "Create an event handler, and returns a channel that will be awaited on
   for serial events. Accepts a callback, a function to receive translated
   events."
-  ([callback] (make-event-handler! callback (fn [_] nil)))
-  ([callback debug-cb]
+  ([c] (make-event-handler! c (fn [_] nil)))
+  ([c debug-cb]
   (reset! debug-callback! debug-cb)
   (let [msg-chan (chan)]
     (go-loop [msg (<! msg-chan)]
       (if-let [event (on-msg-size msg)]
-        (callback event))
+        (put! c event))
       (recur (<! msg-chan)))
     msg-chan)))

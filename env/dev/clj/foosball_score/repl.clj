@@ -53,7 +53,7 @@
       (async/pipeline 1 filt-chan (filter (comp not (partial = :tick) first)) out-chan)
       (go-loop [state (<! filt-chan)] (emit-event! state) (recur (<! filt-chan)))
       (reset! event-chan
-              (make-event-handler! #(put! in-chan %) debug-event!))
+              (make-event-handler! in-chan debug-event!))
       (listen-for-ws)
       (call-every-ms #(every-second in-chan) 1000))
     (println (str "You can view the site at http://localhost:" port))))
