@@ -6,7 +6,7 @@
         foosball-score.tick
         [ring.middleware file-info file]
         [org.httpkit.server :refer [run-server]]
-        [clojure.core.async :refer [go go-loop chan >! <! close! put!]]))
+        [clojure.core.async :as async :refer [go go-loop chan >! <! close! put!]]))
 
 (defonce server (atom nil))
 (defonce event-chan (atom nil))
@@ -48,8 +48,10 @@
                    {:port port
                     :auto-reload? true
                     :join? false}))
-    (let [[in-chan out-chan] (event-state-task!)]
-      (go-loop [state (<! out-chan)] (emit-event! state) (recur (<! out-chan)))
+    (let [[in-chan out-chan] (event-state-task!)
+          filt-chan (chan)]
+      (async/pipeline 1 filt-chan (filter (comp not (partial = :tick) first)) out-chan)
+      (go-loop [state (<! filt-chan)] (emit-event! state) (recur (<! filt-chan)))
       (reset! event-chan
               (make-event-handler! #(put! in-chan %) debug-event!))
       (listen-for-ws)
