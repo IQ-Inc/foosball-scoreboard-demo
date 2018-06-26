@@ -6,7 +6,7 @@
         foosball-score.tick
         [ring.middleware file-info file]
         [org.httpkit.server :refer [run-server]]
-        [clojure.core.async :refer [go chan >! close!]]))
+        [clojure.core.async :as async :refer [go go-loop chan >! <! close! put!]]))
 
 (defonce server (atom nil))
 (defonce event-chan (atom nil))
@@ -48,10 +48,14 @@
                    {:port port
                     :auto-reload? true
                     :join? false}))
-    (reset! event-chan
-            (make-event-handler! #(emit-event! (event-state-handler %)) debug-event!))
-    (listen-for-ws)
-    (call-every-ms every-second 1000)
+    (let [[in-chan out-chan] (event-state-task!)
+          filt-chan (chan)]
+      (async/pipeline 1 filt-chan (filter (comp not (partial = :tick) first)) out-chan)
+      (go-loop [state (<! filt-chan)] (emit-event! state) (recur (<! filt-chan)))
+      (reset! event-chan
+              (make-event-handler! in-chan debug-event!))
+      (listen-for-ws)
+      (call-every-ms #(every-second in-chan) 1000))
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []

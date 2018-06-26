@@ -13,6 +13,7 @@
     [foosball-score.statistics :as statistics]
     [foosball-score.persistence :as persist]
     [config.core :refer [env]]
+    [clojure.core.async :as async :refer [go go-loop chan <! put!]]
     [org.httpkit.server :refer [run-server]])
   (:gen-class :main true))
 
@@ -51,26 +52,42 @@
       (dissoc state k))
     state))
 
-(defn event-state-handler
-  [event]
-  (let [state @state/state
-        next-state (some-> state
-                           (state/event->state event)
-                           (statistics/win-loss-stats))]
-    (if (nil? next-state) state
-      (let [next-state (-> next-state
-                           (persist-using! :winners persist/win-for!)
-                           (persist-using! :losers persist/loss-for!)
-                           (persist-using! :tiers persist/tie-for!))]
+(defn- event-state-handler
+  "Pipe the current state and event through a variety of state-transforming functions. If
+  one of them every returns nil, the operation is aborted, and the return is nil. Otherwise,
+  the return is a new state."
+  [state event]
+  (some-> state
+          (state/event->state event)
+          (statistics/win-loss-stats)
+          (persist-using! :winners persist/win-for!)
+          (persist-using! :losers persist/loss-for!)
+          (persist-using! :tiers persist/tie-for!)))
+
+(defn event-state-task!
+  "Spawns a task to process events that change the Foosball state. Events are pushed onto
+  a channel, and the event with a new state is pushed onto an output channel. The return
+  is a tuple of the input and output channels. The output channel pushes messages of
+  [event new-state]."
+  []
+  (let [in  (chan)
+        out (chan)]
+    (go-loop [event   (<! in)       ; Get event from the input channel, waiting if necessary...
+              state @state/state]   ; ...then immediately grab the current state, which may have changed
+      (when-let [next-state (event-state-handler state event)]
         (if (state/game-over? next-state)
-          (post-slack-msg! (slack/game-outcome next-state)))
+            (go (post-slack-msg! (slack/game-outcome next-state))))
         (push-event! (delta state next-state))
-        (state/update-state! next-state)))))
+        (state/update-state! next-state)
+        (put! out [event next-state]))
+      (recur (<! in)              ; Get the event from the input channel, waiting if necessary...
+             @state/state))       ; ...then immediately grab the current state, which may have changed
+    [in out]))
 
 (defn every-second
-  "Invoked every second to sync the time across clients"
-  []
-  (event-state-handler :tick))
+  "Invoked every second to sync the time across clients. Pushes an event on the provided channel."
+  [event-chan]
+  (put! event-chan :tick))
 
 (defn- io-configuration
   "Returns a 'port listener' and 'subscriber' mechanism, depending on the
@@ -86,9 +103,10 @@
   (let [port (Integer/parseInt (or (env :port) "3000"))
         [listen-on-port add-subscriber parsed-arg] (io-configuration (nth args 0) (nth args 1))]
     (listen-on-port parsed-arg)
-    (add-subscriber
-      (events/make-event-handler!
-        event-state-handler #(push-event! {:debug %})))
-    (run-server app {:port port :join? false})
-    (listen-for-ws)
-    (tick/call-every-ms every-second 1000)))
+    (let [[event-chan _] (event-state-task!)]      
+      (add-subscriber
+        (events/make-event-handler!
+          event-chan #(push-event! {:debug %})))
+      (run-server app {:port port :join? false})
+      (listen-for-ws)
+      (tick/call-every-ms #(every-second event-chan) 1000))))
